@@ -1,0 +1,11 @@
+spec_version: 1
+name: bastion
+type: space
+runtime: fastapi
+app: server.app:main
+port: 7860
+description: >
+  Cybersecurity Incident Response RL Environment. An AI agent acts as Incident
+  Commander responding to a live cyberattack. Must investigate, contain, and
+  recover across 8 network systems over 12 hours. Features realistic attacker
+  simulation, partial observability, and cascading consequences.
