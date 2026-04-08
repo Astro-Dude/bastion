@@ -174,11 +174,27 @@ def format_observation(obs: dict, step: int, history: List[str]) -> str:
 
     alerts = obs.get("alert_queue", [])
     if alerts:
-        parts.append("\n## Recent Alerts")
+        parts.append("\n## SIEM Alert Queue")
         for a in alerts[-4:]:
             confirmed = a.get("confirmed", "")
             conf_str = f" [{'CONFIRMED' if confirmed else 'FALSE POSITIVE'}]" if confirmed != "" else ""
-            parts.append(f"  [{a.get('severity', '?'):8s}] {a.get('message', '')}{conf_str}")
+            eid = a.get("event_id", "")
+            eid_str = f"[{eid}] " if eid else ""
+            parts.append(f"  {eid_str}[{a.get('severity', '?'):8s}] {a.get('message', '')}{conf_str}")
+            # SIEM detail line
+            details = []
+            if a.get("mitre_technique"):
+                details.append(f"MITRE:{a['mitre_tactic']}({a['mitre_technique']})")
+            if a.get("source_ip") or a.get("dest_ip"):
+                details.append(f"src={a.get('source_ip','?')}→dst={a.get('dest_ip','?')}")
+            if a.get("process_name"):
+                details.append(f"proc={a['process_name']}")
+            if a.get("confidence"):
+                details.append(f"conf={a['confidence']:.0%}")
+            if a.get("file_hash"):
+                details.append(f"hash={a['file_hash'][:24]}...")
+            if details:
+                parts.append(f"           {' | '.join(details)}")
 
     if history:
         parts.append("\n## Your recent actions")

@@ -18,9 +18,10 @@ Defender actions:
 
 from __future__ import annotations
 
+import hashlib
 import math
 import random
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from models import (
     ActionType,
@@ -33,6 +34,107 @@ from models import (
     SYSTEM_NAMES,
     SystemState,
 )
+
+
+# ---------------------------------------------------------------------------
+# Network topology (IPs, hostnames)
+# ---------------------------------------------------------------------------
+
+SYSTEM_IPS: Dict[str, str] = {
+    "web_server": "10.1.1.10",
+    "app_server": "10.1.2.20",
+    "database": "10.1.3.30",
+    "file_server": "10.1.4.40",
+    "email_server": "10.1.5.50",
+    "workstations": "10.1.6.100",
+    "backup_server": "10.1.7.70",
+    "firewall": "10.0.0.1",
+}
+
+C2_IPS = ["198.51.100.23", "203.0.113.42", "192.0.2.117", "45.77.65.211"]
+
+# ---------------------------------------------------------------------------
+# SIEM alert templates — MITRE ATT&CK mapped
+# ---------------------------------------------------------------------------
+
+LATERAL_MOVEMENT_ALERTS = [
+    {
+        "mitre_technique": "T1021.002", "mitre_tactic": "Lateral Movement",
+        "process_name": "svchost.exe", "event_id": "EVT-4624",
+        "msg": "SMB admin share access from {src_ip} to {dst_ip} — NTLM auth with service account 'svc_deploy'",
+    },
+    {
+        "mitre_technique": "T1021.001", "mitre_tactic": "Lateral Movement",
+        "process_name": "mstsc.exe", "event_id": "EVT-4648",
+        "msg": "RDP session initiated from {src_ip} to {dst_ip} using explicit credentials (user: admin$)",
+    },
+    {
+        "mitre_technique": "T1021.006", "mitre_tactic": "Lateral Movement",
+        "process_name": "winrm.cmd", "event_id": "EVT-4688",
+        "msg": "WinRM remote command execution from {src_ip} on {dst} — encoded PowerShell payload detected",
+    },
+    {
+        "mitre_technique": "T1550.002", "mitre_tactic": "Lateral Movement",
+        "process_name": "lsass.exe", "event_id": "EVT-4624",
+        "msg": "Pass-the-hash authentication from {src_ip} to {dst_ip} — NTLMv2 with non-interactive logon type 3",
+    },
+]
+
+EXFILTRATION_ALERTS = [
+    {
+        "mitre_technique": "T1048.003", "mitre_tactic": "Exfiltration",
+        "process_name": "curl.exe", "event_id": "EVT-5156",
+        "msg": "Large outbound HTTPS transfer from {sys} ({sys_ip}) to {ext_ip} — {size}MB over port 443",
+    },
+    {
+        "mitre_technique": "T1048.001", "mitre_tactic": "Exfiltration",
+        "process_name": "dns.exe", "event_id": "EVT-5158",
+        "msg": "High-entropy DNS TXT queries from {sys} to {ext_ip} — possible DNS tunneling ({count} queries/min)",
+    },
+    {
+        "mitre_technique": "T1041", "mitre_tactic": "Exfiltration",
+        "process_name": "svchost.exe", "event_id": "EVT-5156",
+        "msg": "C2 channel data exfiltration from {sys} ({sys_ip}) — beacon interval 60s to {ext_ip}:8443",
+    },
+]
+
+FALSE_POSITIVE_ALERTS = [
+    {
+        "mitre_technique": "T1078", "mitre_tactic": "Initial Access",
+        "process_name": "sshd", "event_id": "EVT-4625",
+        "msg": "Multiple failed SSH logins on {sys} from {ext_ip} — likely automated scanner (15 attempts/min)",
+        "confidence": 0.25,
+    },
+    {
+        "mitre_technique": "T1046", "mitre_tactic": "Discovery",
+        "process_name": "nmap", "event_id": "EVT-5156",
+        "msg": "Sequential port scan detected targeting {sys} ({sys_ip}) from {ext_ip} — ports 1-1024",
+        "confidence": 0.20,
+    },
+    {
+        "mitre_technique": "T1053.005", "mitre_tactic": "Persistence",
+        "process_name": "schtasks.exe", "event_id": "EVT-4698",
+        "msg": "Scheduled task created on {sys}: 'WindowsUpdateCheck' — runs daily at 02:00 (likely benign)",
+        "confidence": 0.15,
+    },
+    {
+        "mitre_technique": "T1059.001", "mitre_tactic": "Execution",
+        "process_name": "powershell.exe", "event_id": "EVT-4688",
+        "msg": "PowerShell execution on {sys} by SYSTEM — encoded command matches monitoring agent signature",
+        "confidence": 0.30,
+    },
+    {
+        "mitre_technique": "T1071.001", "mitre_tactic": "Command and Control",
+        "process_name": "chrome.exe", "event_id": "EVT-5156",
+        "msg": "Periodic HTTPS beacon from {sys} to {ext_ip}:443 — pattern consistent with browser keepalive",
+        "confidence": 0.20,
+    },
+]
+
+
+def _make_file_hash(seed: str) -> str:
+    """Generate a deterministic fake file hash from a seed string."""
+    return "sha256:" + hashlib.sha256(seed.encode()).hexdigest()[:32]
 
 
 # ---------------------------------------------------------------------------
@@ -75,15 +177,27 @@ def attacker_turn(state: IncidentState, rng: random.Random) -> List[Alert]:
                 target.compromised = True
                 state.attacker_progress = min(1.0, state.attacker_progress + 0.08)
 
-                # Generate alert (may or may not be detected)
+                # Generate SIEM-enriched alert (may or may not be detected)
                 detect_chance = 0.3 + target.monitoring_level * 0.2
                 if rng.random() < detect_chance:
+                    t = rng.choice(LATERAL_MOVEMENT_ALERTS)
+                    src_ip = SYSTEM_IPS.get(src_name, "10.0.0.1")
+                    dst_ip = SYSTEM_IPS.get(neighbor_name, "10.0.0.2")
+                    conf = min(0.95, 0.45 + target.monitoring_level * 0.15 + rng.uniform(-0.05, 0.05))
                     alerts.append(Alert(
                         source_system=neighbor_name,
                         severity=AlertSeverity.HIGH,
-                        message=f"Suspicious lateral movement detected on {neighbor_name}",
+                        message=t["msg"].format(src_ip=src_ip, dst_ip=dst_ip, dst=neighbor_name),
                         is_true_positive=True,
                         hour=state.hour,
+                        source_ip=src_ip,
+                        dest_ip=dst_ip,
+                        mitre_technique=t["mitre_technique"],
+                        mitre_tactic=t["mitre_tactic"],
+                        process_name=t["process_name"],
+                        event_id=t["event_id"],
+                        confidence=round(conf, 2),
+                        file_hash=_make_file_hash(f"{state.hour}{neighbor_name}{src_name}"),
                     ))
 
     # --- Data exfiltration ---
@@ -94,12 +208,25 @@ def attacker_turn(state: IncidentState, rng: random.Random) -> List[Alert]:
                 state.data_exfiltrated = min(1.0, state.data_exfiltrated + exfil_rate)
 
                 if rng.random() < 0.25 + s.monitoring_level * 0.15:
+                    t = rng.choice(EXFILTRATION_ALERTS)
+                    sys_ip = SYSTEM_IPS.get(s.name, "10.0.0.1")
+                    ext_ip = rng.choice(C2_IPS)
+                    size = rng.randint(50, 500)
+                    count = rng.randint(80, 300)
+                    conf = min(0.95, 0.50 + s.monitoring_level * 0.15 + rng.uniform(-0.05, 0.05))
                     alerts.append(Alert(
                         source_system=s.name,
                         severity=AlertSeverity.CRITICAL,
-                        message=f"Unusual outbound data transfer from {s.name}",
+                        message=t["msg"].format(sys=s.name, sys_ip=sys_ip, ext_ip=ext_ip, size=size, count=count),
                         is_true_positive=True,
                         hour=state.hour,
+                        source_ip=sys_ip,
+                        dest_ip=ext_ip,
+                        mitre_technique=t["mitre_technique"],
+                        mitre_tactic=t["mitre_tactic"],
+                        process_name=t["process_name"],
+                        event_id=t["event_id"],
+                        confidence=round(conf, 2),
                     ))
 
     # --- Backdoor installation ---
@@ -114,23 +241,27 @@ def attacker_turn(state: IncidentState, rng: random.Random) -> List[Alert]:
         if s.compromised and not s.isolated:
             s.integrity = max(0.0, s.integrity - rng.uniform(0.02, 0.08))
 
-    # --- False positive alerts (noise) ---
+    # --- False positive alerts (noise) — SIEM-enriched ---
     num_false = rng.randint(0, 2)
     for _ in range(num_false):
         fake_sys = rng.choice(SYSTEM_NAMES)
         severity = rng.choice([AlertSeverity.LOW, AlertSeverity.MEDIUM])
-        messages = [
-            f"Unusual login pattern on {fake_sys}",
-            f"Port scan detected targeting {fake_sys}",
-            f"Failed authentication attempts on {fake_sys}",
-            f"Anomalous process activity on {fake_sys}",
-        ]
+        t = rng.choice(FALSE_POSITIVE_ALERTS)
+        sys_ip = SYSTEM_IPS.get(fake_sys, "10.0.0.1")
+        ext_ip = rng.choice(C2_IPS)
         alerts.append(Alert(
             source_system=fake_sys,
             severity=severity,
-            message=rng.choice(messages),
+            message=t["msg"].format(sys=fake_sys, sys_ip=sys_ip, ext_ip=ext_ip),
             is_true_positive=False,
             hour=state.hour,
+            source_ip=ext_ip,
+            dest_ip=sys_ip,
+            mitre_technique=t["mitre_technique"],
+            mitre_tactic=t["mitre_tactic"],
+            process_name=t["process_name"],
+            event_id=t["event_id"],
+            confidence=round(t["confidence"] + rng.uniform(-0.05, 0.05), 2),
         ))
 
     # --- Attacker stealth decays slightly each hour (they get bolder) ---

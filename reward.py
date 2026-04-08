@@ -2,7 +2,7 @@
 Bastion: Cybersecurity Incident Response — Reward & Scoring
 
 Three layers:
-  1. Dense step reward — encourages containment, discourages wasted actions
+  1. Dense step reward — criticality-weighted containment and protection
   2. Penalties — catastrophic breach, total service outage, team burnout
   3. Final score — holistic incident response quality (0-1)
 """
@@ -13,7 +13,7 @@ from models import IncidentState, SERVICE_SYSTEMS, NUM_SYSTEMS
 
 
 # ---------------------------------------------------------------------------
-# Step-level dense reward
+# Step-level dense reward (criticality-weighted)
 # ---------------------------------------------------------------------------
 
 def compute_step_reward(
@@ -21,20 +21,32 @@ def compute_step_reward(
     curr: IncidentState,
     stamina_cost: float,
 ) -> float:
-    """Dense reward based on containment progress, data protection, and cost."""
+    """Dense reward weighted by system criticality."""
 
-    # Containment: fewer active compromised systems is good
-    prev_active = sum(1 for s in prev.systems if s.compromised and not s.isolated)
-    curr_active = sum(1 for s in curr.systems if s.compromised and not s.isolated)
-    delta_containment = (prev_active - curr_active) / max(NUM_SYSTEMS, 1)
+    # Containment: weighted by criticality (protecting database > workstations)
+    prev_threat = sum(
+        s.criticality for s in prev.systems if s.compromised and not s.isolated
+    )
+    curr_threat = sum(
+        s.criticality for s in curr.systems if s.compromised and not s.isolated
+    )
+    total_criticality = sum(s.criticality for s in curr.systems) or 1.0
+    delta_containment = (prev_threat - curr_threat) / total_criticality
 
-    # Data protection: less exfiltration is good
+    # Data protection: unchanged (already global)
     delta_exfil = curr.data_exfiltrated - prev.data_exfiltrated
 
-    # Service continuity
-    prev_disrupted = prev.services_disrupted
-    curr_disrupted = curr.services_disrupted
-    delta_disruption = (curr_disrupted - prev_disrupted) / len(SERVICE_SYSTEMS)
+    # Service continuity: weighted by service criticality
+    prev_disruption = sum(
+        s.criticality for s in prev.systems
+        if s.name in SERVICE_SYSTEMS and (s.isolated or s.integrity < 0.3)
+    )
+    curr_disruption = sum(
+        s.criticality for s in curr.systems
+        if s.name in SERVICE_SYSTEMS and (s.isolated or s.integrity < 0.3)
+    )
+    service_crit = sum(s.criticality for s in curr.systems if s.name in SERVICE_SYSTEMS) or 1.0
+    delta_disruption = (curr_disruption - prev_disruption) / service_crit
 
     # Investigation progress
     prev_investigated = sum(1 for s in prev.systems if s.investigated)
@@ -56,14 +68,11 @@ def compute_step_reward(
 # ---------------------------------------------------------------------------
 
 def compute_penalties(state: IncidentState) -> float:
-    """Non-positive penalty for catastrophic outcomes."""
     penalty = 0.0
 
-    # Catastrophic data breach (>80% exfiltrated)
     if state.data_exfiltrated > 0.8:
         penalty -= 1.0
 
-    # All critical services down
     services_down = sum(
         1 for s in state.systems
         if s.name in SERVICE_SYSTEMS and (s.isolated or s.integrity < 0.3)
@@ -71,7 +80,6 @@ def compute_penalties(state: IncidentState) -> float:
     if services_down >= len(SERVICE_SYSTEMS):
         penalty -= 0.5
 
-    # Team burnout
     if state.team_stamina <= 0.05:
         penalty -= 0.3
 
@@ -79,27 +87,30 @@ def compute_penalties(state: IncidentState) -> float:
 
 
 # ---------------------------------------------------------------------------
-# Final score
+# Final score (criticality-weighted)
 # ---------------------------------------------------------------------------
 
 def compute_final_score(state: IncidentState) -> float:
-    """
-    Holistic score of incident response quality. Returns [0, 1].
-
-    Components:
-      35% data protection (1 - data_exfiltrated)
-      25% containment (1 - attacker_progress)
-      20% business continuity (services intact / total)
-      10% forensic completeness (systems investigated / total)
-      10% team sustainability (stamina remaining)
-    """
+    """Holistic score weighted by system criticality. Returns [0, 1]."""
     data_protection = 1.0 - state.data_exfiltrated
-    containment = 1.0 - state.attacker_progress
-    services_intact = sum(
-        1 for s in state.systems
+
+    # Containment weighted by criticality
+    active_threat = sum(
+        s.criticality for s in state.systems if s.compromised and not s.isolated
+    )
+    total_crit = sum(s.criticality for s in state.systems) or 1.0
+    containment = 1.0 - (active_threat / total_crit)
+
+    # Business continuity weighted by service criticality
+    services_intact_weighted = sum(
+        s.criticality for s in state.systems
         if s.name in SERVICE_SYSTEMS and not s.isolated and s.integrity > 0.3
     )
-    business_continuity = services_intact / len(SERVICE_SYSTEMS)
+    total_service_crit = sum(
+        s.criticality for s in state.systems if s.name in SERVICE_SYSTEMS
+    ) or 0.01
+    business_continuity = services_intact_weighted / total_service_crit
+
     forensic = sum(1 for s in state.systems if s.investigated) / NUM_SYSTEMS
     sustainability = state.team_stamina
 
@@ -117,17 +128,26 @@ def compute_task_weighted_score(
     state: IncidentState,
     weights: dict[str, float] | None = None,
 ) -> float:
-    """Task-specific scoring with custom weights."""
     if weights is None:
         return compute_final_score(state)
 
     data_protection = 1.0 - state.data_exfiltrated
-    containment = 1.0 - state.attacker_progress
-    services_intact = sum(
-        1 for s in state.systems
+
+    active_threat = sum(
+        s.criticality for s in state.systems if s.compromised and not s.isolated
+    )
+    total_crit = sum(s.criticality for s in state.systems) or 1.0
+    containment = 1.0 - (active_threat / total_crit)
+
+    services_intact_weighted = sum(
+        s.criticality for s in state.systems
         if s.name in SERVICE_SYSTEMS and not s.isolated and s.integrity > 0.3
     )
-    business_continuity = services_intact / len(SERVICE_SYSTEMS)
+    total_service_crit = sum(
+        s.criticality for s in state.systems if s.name in SERVICE_SYSTEMS
+    ) or 0.01
+    business_continuity = services_intact_weighted / total_service_crit
+
     forensic = sum(1 for s in state.systems if s.investigated) / NUM_SYSTEMS
     sustainability = state.team_stamina
 
@@ -146,7 +166,6 @@ def compute_baseline_comparison(
     baseline_state: IncidentState,
     weights: dict[str, float] | None = None,
 ) -> float:
-    """Agent vs baseline, mapped to [0, 1]. 0.5 = tied."""
     agent_score = compute_task_weighted_score(agent_state, weights)
     baseline_score = compute_task_weighted_score(baseline_state, weights)
     diff = agent_score - baseline_score

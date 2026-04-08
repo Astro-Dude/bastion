@@ -4,7 +4,7 @@
 
 ### The Problem with Current LLM Evaluation
 
-Most LLM benchmarks test **knowledge recall** (trivia, coding syntax, math formulas). But real-world intelligence requires something harder: **making sequential decisions under uncertainty where early mistakes compound and information is incomplete**.
+Most LLM benchmarks test **knowledge recall** — trivia, coding syntax, math formulas. But real-world intelligence requires something harder: **making sequential decisions under uncertainty where early mistakes compound and information is incomplete**.
 
 Current LLMs fail at this because:
 - They **overreact** to the most recent information (recency bias)
@@ -23,7 +23,7 @@ A live cyberattack is the **perfect stress test** for an AI agent because:
 
 3. **Time pressure creates tension** — the attacker spreads laterally while you deliberate. Taking too long is itself a failure mode.
 
-4. **Cascading consequences** — if you don't isolate a compromised database server, the attacker pivots from it to the backup server. If you isolate the wrong server, production goes down for nothing.
+4. **Cascading consequences** — if you don't isolate a compromised database server, the attacker pivots from it to the backup server. If you restore from a compromised backup, you re-infect the system.
 
 5. **No single correct answer** — there are better and worse trajectories, but the optimal strategy depends on what the attacker is doing, which you can only partially observe.
 
@@ -36,20 +36,20 @@ A live cyberattack is the **perfect stress test** for an AI agent because:
 ```
 ┌──────────────┐     observation (JSON)      ┌──────────────┐
 │              │ ───────────────────────────► │              │
-│  Bastion   │                              │   LLM Agent  │
+│   Bastion    │                              │   LLM Agent  │
 │  (this env)  │ ◄─────────────────────────── │  (policy π)  │
-│              │     action (0-9)              │              │
+│              │     action (0-9, target 0-7) │              │
 └──────────────┘                              └──────────────┘
         │                                            │
         │  reward signal                             │
         └────────────────────────────────────────────┘
 ```
 
-The LLM is the **policy** (π). It sees an observation and outputs an action. The environment returns a reward. Over many episodes, the LLM generates trajectories:
+The LLM is the **policy** (π). It receives a SIEM alert queue and system status, reasons about the situation, and picks an action. The environment returns a reward. Over many episodes, the LLM generates trajectories:
 
 ```
-Episode 1: obs₀ → a₃ → r₁, obs₁ → a₇ → r₂, ... → final_score = 0.3  (bad)
-Episode 2: obs₀ → a₁ → r₁, obs₁ → a₅ → r₂, ... → final_score = 0.8  (good)
+Episode 1: obs₀ → investigate(app_server) → r₁, obs₁ → isolate(database) → r₂, ... → score = 0.3
+Episode 2: obs₀ → analyze_alerts → r₁, obs₁ → investigate(database) → r₂, ... → score = 0.8
 ```
 
 ### Step 2: Generating Training Signal
@@ -63,24 +63,23 @@ Episode 2: obs₀ → a₁ → r₁, obs₁ → a₅ → r₂, ... → final_sco
 
 **For PPO / Online RL:**
 - The dense per-step reward directly guides policy gradient updates
-- The LLM learns: "when I see high network_compromised + low investigation_progress, I should investigate before isolating"
+- The LLM learns: "when I see high data_exfiltrated + low investigation_progress, I should investigate before isolating"
 
 **For Eval / Benchmarking:**
 - Run different LLMs through identical scenarios (deterministic seeds)
 - Compare their `comparison_score` against the baseline
-- Publish results: "GPT-4o scores 0.72, Llama-3-70B scores 0.58, Claude scores 0.81"
+- Publish results: "GPT-4o scores 0.72, Llama-3-70B scores 0.58, Qwen-72B scores 0.55"
 
 ### Step 3: What the LLM Actually Learns
 
-The environment is designed so that optimal play requires:
-
 | Skill | How It's Tested | Why LLMs Currently Fail |
 |---|---|---|
-| **Hypothesis formation** | Must interpret alerts + logs to form attack theory | LLMs take alerts at face value, don't cross-reference |
+| **Hypothesis formation** | Must interpret SIEM alerts with MITRE ATT&CK tags, IPs, process names to form attack theory | LLMs take alerts at face value, don't cross-reference indicators |
 | **Information gathering vs action** | Must decide when to investigate vs when to act | LLMs either investigate forever or act too quickly |
-| **Risk assessment** | Must weigh "cost of being wrong" for each action | LLMs don't model downside risk well |
-| **Prioritization** | Multiple systems under attack, limited actions per turn | LLMs try to do everything at once or focus on the wrong thing |
-| **Adaptive strategy** | Attack evolves — initial plan must be revised | LLMs anchor on their first hypothesis |
+| **Risk assessment** | Must weigh "cost of being wrong" for each action — isolating a clean server wastes service uptime | LLMs don't model downside risk well |
+| **Prioritization** | Multiple systems under attack, limited actions per turn — database (criticality=1.0) matters more than workstations (0.3) | LLMs try to do everything at once or focus on the wrong thing |
+| **Adaptive strategy** | Attack evolves — attacker spreads while you deliberate, initial plan must be revised | LLMs anchor on their first hypothesis |
+| **Signal vs noise** | False positive alerts (35% confidence) mixed with real alerts (82% confidence) | LLMs can't distinguish reliable from unreliable information |
 | **Resource management** | Team stamina depletes, tools have cooldowns | LLMs ignore resource constraints |
 
 ---
@@ -89,138 +88,200 @@ The environment is designed so that optimal play requires:
 
 ### The Scenario
 
-You are the **Incident Commander** at a mid-size tech company. Your network has been breached. An Advanced Persistent Threat (APT) actor is inside your network, moving laterally, exfiltrating data, and escalating privileges.
+You are the **Incident Commander** at a mid-size tech company. Your network has been breached. An attacker is inside your network, moving laterally, exfiltrating data, and escalating privileges.
 
 You have a 12-step window (each step = 1 hour of incident response) to contain the breach, minimize data loss, and restore operations.
 
+### Network Topology
+
+```
+firewall ─── web_server ─── app_server ─── database ─── backup_server
+              (0.6)          (0.8)          (1.0)         (0.9)
+                                │
+                           file_server ─── email_server
+                             (0.7)           (0.4)
+                                │              │
+                           workstations ───────┘
+                             (0.3)
+```
+Numbers in parentheses = system criticality (affects scoring weight).
+
 ### State (What's Really Happening)
 
-```
-Network: 8 systems (web_server, app_server, database, file_server,
-                     email_server, workstations, backup_server, firewall)
-
-Each system has:
-  - compromised: bool        (is the attacker on this system?)
-  - isolated: bool           (have we cut it off from the network?)
-  - investigated: bool       (have we forensically analyzed it?)
-  - integrity: float (0-1)   (how intact is the data/service?)
-  - criticality: float       (how important is this system? database > workstations)
+Each of the 8 systems has:
+- `compromised`: bool (is the attacker on this system?)
+- `isolated`: bool (have we cut it off from the network?)
+- `investigated`: bool (have we forensically analyzed it?)
+- `has_backdoor`: bool (has the attacker installed persistence?)
+- `integrity`: float (0-1, how intact is the data/service?)
+- `criticality`: float (how important is this system?)
+- `monitoring_level`: int (0-3, sensor coverage)
+- `patched`: bool (has this system been patched?)
 
 Global state:
-  - attacker_progress: float (0-1)    how much of their objective they've achieved
-  - attacker_stealth: float (0-1)     how hidden the attacker remains
-  - data_exfiltrated: float (0-1)     how much sensitive data has been stolen
-  - services_disrupted: int           how many production services are down
-  - team_stamina: float (0-1)         your IR team gets tired (affects effectiveness)
-  - alert_queue: list[Alert]          incoming security alerts (some are noise)
-  - hour: int (0-12)                  time step
-```
+- `attacker_progress`: float (0-1, how much of their objective achieved)
+- `attacker_stealth`: float (0-1, how hidden the attacker remains)
+- `data_exfiltrated`: float (0-1, how much sensitive data stolen)
+- `team_stamina`: float (0-1, team fatigue level)
+- `alert_queue`: list of SIEM alerts (some real, some false positives)
 
-### Observation (What the Agent Sees — NOISY)
+### Observation (What the Agent Sees — Partial Observability)
 
 The agent does NOT see the true state. Instead:
-- **Alerts** are noisy — some are false positives, some real attacks are missed
-- **Compromise status** is unknown until a system is investigated
-- **Data exfiltration** is estimated with delay and noise
-- **Attacker progress** is invisible — you only see its effects
-- `analyze_alerts` reveals more accurate information for one step
+- **Compromise status is UNKNOWN** until a system is investigated — shows `compromised: ?`
+- **Alerts contain false positives** — the agent doesn't know which are real
+- **Alert confidence varies** — real alerts tend to have higher confidence (72-94%) but false positives can look convincing (15-35%)
+- **Data exfiltration is estimated** with Gaussian noise
+- **Attacker progress is invisible** — you only see its effects
+- `analyze_alerts` reveals true/false positive status for one step
+
+### SIEM Alert System
+
+Alerts are enriched with professional security metadata:
+
+```
+[EVT-4624] [high] SMB admin share access from 10.1.1.10 to 10.1.2.20 — 
+NTLM auth with service account 'svc_deploy'
+           MITRE:Lateral Movement(T1021.002) | src=10.1.1.10→dst=10.1.2.20 | 
+           proc=svchost.exe | conf=72%
+```
+
+Each alert includes:
+- **MITRE ATT&CK** technique ID and tactic (e.g., T1021.002 = SMB/Windows Admin Shares)
+- **Source/destination IPs** from the internal network map
+- **Process name** that triggered the alert
+- **Event ID** from the detection engine
+- **Confidence score** (higher = more likely real)
+- **File hashes** when applicable (SHA-256)
+
+Alert templates cover:
+- **Lateral movement**: SMB share access, RDP sessions, WinRM execution, pass-the-hash
+- **Exfiltration**: HTTPS transfers, DNS tunneling, C2 channel data theft
+- **False positives**: Failed SSH logins, port scans, scheduled tasks, monitoring agents, browser keepalives
 
 ### Actions (10 discrete)
 
 | ID | Action | Effect | Tradeoff |
 |---|---|---|---|
-| 0 | investigate_system | Reveals true state of a system | Takes time, attacker keeps moving |
-| 1 | isolate_system | Cuts system from network | Stops attacker BUT kills that service |
-| 2 | patch_vulnerability | Fixes known vuln on a system | Slow, only helps if vuln is relevant |
-| 3 | restore_from_backup | Restores a compromised system | Only works if backup isn't compromised too |
-| 4 | analyze_alerts | Deep analysis of alert queue | Reveals true positives, costs team stamina |
-| 5 | deploy_monitoring | Adds sensors to detect attacker movement | Future alerts more accurate |
-| 6 | escalate_to_management | Buys resources but creates pressure | Gets help but adds time pressure / scrutiny |
-| 7 | block_external_traffic | Kills all outbound connections | Stops exfiltration but disrupts everything |
-| 8 | hunt_threat | Proactively search for attacker indicators | Can find attacker but might alert them |
-| 9 | coordinate_team | Rest and reorganize the IR team | Recovers stamina but wastes an hour |
+| 0 | investigate_system | Reveals true state of target system | Takes time, attacker keeps moving |
+| 1 | isolate_system | Cuts system from network | Stops attacker BUT kills that production service |
+| 2 | patch_vulnerability | Fixes vuln, may clean compromised system | Slow, only 30% chance of cleaning |
+| 3 | restore_from_backup | Restores compromised system from backup | **DANGER**: if backup is compromised, re-infects the target! |
+| 4 | analyze_alerts | Deep analysis of alert queue | Reveals true/false positive status, costs stamina |
+| 5 | deploy_monitoring | Adds sensors to target + adjacent systems | Investment for better future detection |
+| 6 | escalate_to_management | Gets resources but creates pressure | Stamina boost but increasing scrutiny |
+| 7 | block_external_traffic | Kills ALL outbound connections | Stops exfiltration but degrades all services |
+| 8 | hunt_threat | Proactively search for attacker on target | Can discover hidden compromise, may alert attacker |
+| 9 | coordinate_team | Rest and regroup | Recovers stamina but wastes an hour |
 
-### Attacker Simulation (the "adversary")
+### Attacker Simulation
 
-The attacker follows a realistic kill chain:
-1. **Initial access** → already happened (pre-scenario)
-2. **Lateral movement** → spreads to adjacent systems each hour
-3. **Privilege escalation** → gets deeper access over time
-4. **Data exfiltration** → steals data from compromised databases/file servers
-5. **Persistence** → installs backdoors that survive reboots
+The attacker follows a realistic kill chain each hour:
 
-The attacker:
-- Moves faster when undetected (stealth is high)
-- Slows down when the defender investigates (attacker gets cautious)
-- Can pivot to backup systems if primary targets are isolated
-- Has a 12-hour objective window
+1. **Lateral movement** — spreads to adjacent systems through the network graph. Chance depends on stealth level, monitoring, and patching. Uses techniques like SMB admin shares (T1021.002), RDP (T1021.001), WinRM (T1021.006), pass-the-hash (T1550.002).
+
+2. **Data exfiltration** — steals data from compromised data systems (database, file_server, email_server, backup_server) unless external traffic is blocked. Uses HTTPS transfers (T1048.003), DNS tunneling (T1048.001), C2 channels (T1041).
+
+3. **Backdoor installation** — installs persistence mechanisms on compromised systems.
+
+4. **Integrity degradation** — degrades compromised systems over time.
+
+5. **Adaptation** — attacker stealth decays over time (gets bolder/noisier).
+
+### Criticality-Weighted Scoring
+
+Not all systems are equal. The scoring system weights actions by system criticality:
+
+| System | Criticality | Why |
+|---|---|---|
+| database | 1.0 | Crown jewels — sensitive customer data |
+| backup_server | 0.9 | Recovery depends on backup integrity |
+| app_server | 0.8 | Core business logic |
+| file_server | 0.7 | Shared documents, IP |
+| web_server | 0.6 | Public-facing, replaceable |
+| firewall | 0.5 | Perimeter defense |
+| email_server | 0.4 | Communication, some data |
+| workstations | 0.3 | Endpoints, least critical |
+
+Protecting the database is worth 3.3x more than protecting workstations.
 
 ### Reward Function
 
-**Per-step (dense):**
+**Per-step (dense, criticality-weighted):**
 ```
 reward = (
-    +0.3 × delta_containment        (attacker's spread reduced)
-    +0.3 × (-delta_exfiltration)     (less data stolen)
-    +0.2 × (-delta_disruption)       (services restored)
-    +0.1 × delta_investigation       (more systems investigated)
-    -0.1 × action_cost               (team stamina spent)
+    0.30 × delta_containment_weighted    (threat reduced, weighted by criticality)
+  + 0.30 × (-delta_exfiltration)         (less data stolen)
+  + 0.20 × (-delta_disruption_weighted)  (services restored, weighted by criticality)
+  + 0.10 × delta_investigation           (more systems investigated)
+  - 0.10 × stamina_cost                  (team energy spent)
 )
 ```
 
 **Penalties:**
-- Total data exfiltration > 80%: -1.0 (catastrophic breach)
+- Total data breach (>80% exfiltrated): -1.0
 - All critical services down: -0.5
-- Team burnout (stamina = 0): -0.3
+- Team burnout (stamina ≤ 5%): -0.3
 
 **Final score:**
 ```
-score = (
-    0.35 × (1 - data_exfiltrated)          (data protection)
-    + 0.25 × (1 - attacker_progress)       (containment)
-    + 0.20 × (services_intact / total)     (business continuity)
-    + 0.10 × (systems_investigated / total) (forensic completeness)
-    + 0.10 × team_stamina                   (sustainable response)
-)
+score = 0.35×data_protection + 0.25×containment + 0.20×business_continuity + 0.10×forensic + 0.10×sustainability
 ```
+All components weighted by system criticality. Compared against naive baseline, mapped to [0, 1].
 
 ### Tasks (3 Scenarios)
 
-**Easy: "Script Kiddie"**
-- Amateur attacker, slow lateral movement
-- Only 2 systems initially compromised
-- Clear, accurate alerts
-- Goal: contain and investigate
+**Easy: "Suspicious External Activity"**
+- Single system compromised (web_server), attacker is noisy (stealth=0.4)
+- Clear SIEM alerts with high confidence (82%, 65%)
+- Good starting monitoring on DMZ
+- Tests: basic triage workflow — investigate, confirm, isolate, sweep
 
-**Medium: "Ransomware Outbreak"**
-- Fast-spreading malware hitting multiple systems
-- 4 systems compromised, spreading quickly
-- Many alerts (some false positives)
-- Must prioritize: stop the spread or save data?
+**Medium: "Encryption Activity Detected"**
+- 3 systems compromised (file_server, workstations, email_server), ransomware spreading fast
+- 4 alerts — but 1 is a false positive (app_server CPU spike, 35% confidence)
+- Tests: prioritization under pressure, distinguishing real from fake alerts, protecting data stores
 
-**Hard: "APT — Advanced Persistent Threat"**
-- Sophisticated nation-state actor
-- Only 1 system compromised but deep access
-- Mostly stealthy — few alerts, many false positives
-- Attacker actively evades detection
-- Must investigate carefully before acting
+**Hard: "Anomalous Beacon Detected"**
+- 2 systems compromised (app_server + hidden database), APT actor (stealth=0.9)
+- Only 1 real alert with low confidence (42%), 1 false positive that looks equally plausible
+- No monitoring deployed anywhere
+- Tests: deep investigation, hypothesis formation, discovering hidden threats, cautious response
+
+---
+
+## Real LLM Benchmark Results
+
+Tested with Qwen/Qwen2.5-72B-Instruct:
+
+| Task | Agent Score | Baseline Score | Comparison | LLM Strategy |
+|---|---|---|---|---|
+| easy_1 | 0.848 | 0.748 | **0.550** | Investigated alert target, isolated immediately, full system sweep |
+| medium_1 | 0.681 | 0.585 | **0.548** | Correctly isolated 3 compromised systems but fell for false positive on app_server |
+| hard_1 | 0.579 | 0.346 | **0.616** | Found hidden compromise on database, checked backup before restoring (textbook IR) |
+
+Key findings:
+- LLM performed **best on the hardest task** because that's where intelligent reasoning matters most over naive rotation
+- LLM **fell for the false positive** on medium — didn't use `analyze_alerts` to verify
+- LLM **over-investigated** on easy — burned team stamina to 0% checking systems after threat was already contained
+- LLM correctly **checked backup integrity before restoring** on hard — a critical real-world IR practice
 
 ---
 
 ## What Makes This a Great Project
 
 ### For the Hackathon
-1. **Novel domain** — nobody else is building this
-2. **Technically credible** — Meta engineers deal with security daily
-3. **Tests genuine LLM weaknesses** — not just math optimization
-4. **Clean OpenEnv integration** — proper typed models, WebSocket, all endpoints
-5. **Research-relevant** — automated incident response is a real research area
+1. **Novel domain** — cybersecurity IR, not another game or chatbot
+2. **MITRE ATT&CK integration** — 12+ technique IDs across 3 alert categories
+3. **Tests genuine LLM weaknesses** — partial observability, false positive discrimination, prioritization
+4. **Clean OpenEnv integration** — typed Pydantic models, WebSocket, all endpoints, passes `openenv validate`
+5. **Real benchmark results** included
 
 ### For LLM Training
-1. **Rich reward signal** — dense per-step feedback, not just binary pass/fail
-2. **Exposes specific failure modes** — anchoring, recency bias, poor prioritization
-3. **Scalable difficulty** — easy→hard tasks create a curriculum
-4. **Deterministic** — same seed = same scenario = fair comparison
+1. **Rich reward signal** — 5-component criticality-weighted dense reward, not just binary pass/fail
+2. **Exposes specific failure modes** — anchoring, false positive confusion, over-investigation, poor resource management
+3. **Scalable difficulty** — easy→hard creates a natural curriculum
+4. **Deterministic** — same seed = same scenario = fair comparison between models
 5. **Baseline comparison** — always know if the LLM is better than naive strategy
 
 ### For the AI Safety Community

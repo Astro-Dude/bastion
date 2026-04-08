@@ -16,76 +16,93 @@ A research-grade OpenEnv-compatible reinforcement learning environment where an 
 
 Current LLM benchmarks test knowledge recall. Bastion tests something harder: **sequential decision-making under uncertainty where mistakes compound and information is incomplete**.
 
-A live cyberattack is the perfect stress test because:
-- **Partial observability is real** — you don't know what the attacker has done until you investigate
+- **Partial observability** — you don't know which systems are compromised until you investigate
 - **Every action has tradeoffs** — isolating a server stops the attacker but kills production
 - **Time pressure** — the attacker spreads while you deliberate
-- **Cascading consequences** — wrong moves make things worse (restoring from compromised backup re-infects systems)
+- **Cascading consequences** — restoring from a compromised backup re-infects the system
+- **False positives** — some alerts are noise, and acting on them wastes resources
 - **No single correct answer** — only better trajectories
 
-## HuggingFace Space
+## Network Topology
 
-> **Space URL**: _[To be updated after deployment]_
-
-## Environment Design
-
-### Network (8 Systems)
 ```
 firewall ─── web_server ─── app_server ─── database ─── backup_server
+              (0.6)          (0.8)          (1.0)         (0.9)
                                 │
                            file_server ─── email_server
+                             (0.7)           (0.4)
                                 │              │
                            workstations ───────┘
+                             (0.3)
+```
+Numbers = system criticality (affects scoring). Protecting the database matters 3.3x more than workstations.
+
+## SIEM Alert System
+
+Alerts use professional security metadata with MITRE ATT&CK mapping:
+
+```
+[EVT-4624] [high] SMB admin share access from 10.1.1.10 to 10.1.2.20 — 
+NTLM auth with service account 'svc_deploy'
+           MITRE:Lateral Movement(T1021.002) | src=10.1.1.10→dst=10.1.2.20 | 
+           proc=svchost.exe | conf=72%
 ```
 
-Each system has: `compromised` (hidden), `isolated`, `investigated`, `integrity`, `monitoring_level`, `patched`
+Each alert includes: MITRE technique ID + tactic, source/dest IPs, process name, event ID, confidence score, and file hashes. Templates cover lateral movement (T1021, T1550), exfiltration (T1048, T1041), and false positives (T1078, T1046, T1053).
 
-### Observation (Partial Observability)
-- **Compromise status is UNKNOWN** unless the system has been investigated
-- **Alerts may be false positives** — `analyze_alerts` reveals which are real
-- **Data exfiltration is estimated** with noise and delay
-- **Attacker progress is invisible** — you only see its effects
+## Action Space (10 actions x 8 target systems)
 
-### Action Space (10 actions × 8 target systems)
 | ID | Action | Effect | Tradeoff |
 |---|---|---|---|
-| 0 | investigate_system | Reveals true state of target | Takes time while attacker moves |
+| 0 | investigate_system | Reveals true compromise state of target | Takes time while attacker moves |
 | 1 | isolate_system | Cuts target from network | Kills the service on that system |
-| 2 | patch_vulnerability | Fixes vuln, may clean system | Slow, uncertain effectiveness |
-| 3 | restore_from_backup | Restores compromised system | FAILS if backup is also compromised |
-| 4 | analyze_alerts | Reveals true/false positive alerts | Costs team stamina |
+| 2 | patch_vulnerability | Fixes vuln, may clean system (30% chance) | Slow, uncertain effectiveness |
+| 3 | restore_from_backup | Restores compromised system | **FAILS if backup is also compromised** |
+| 4 | analyze_alerts | Reveals true/false positive alert status | Costs team stamina |
 | 5 | deploy_monitoring | Adds sensors to target + neighbors | Investment for future turns |
 | 6 | escalate_to_management | Gets resources, adds pressure | Scrutiny increases |
 | 7 | block_external_traffic | Stops ALL outbound connections | Kills exfiltration AND services |
 | 8 | hunt_threat | Proactively search for attacker | May alert the attacker |
 | 9 | coordinate_team | Rest and recover stamina | Wastes an hour |
 
-### Attacker Simulation
-Realistic kill chain:
-- **Lateral movement** through network adjacency graph
-- **Data exfiltration** from database, file_server, email_server, backup_server
+## Attacker Simulation
+
+Realistic kill chain each hour:
+- **Lateral movement** through network adjacency graph (SMB shares, RDP, WinRM, pass-the-hash)
+- **Data exfiltration** from database, file_server, email_server, backup_server (HTTPS, DNS tunneling, C2)
 - **Backdoor installation** for persistence
 - **Integrity degradation** of compromised systems
-- **Adapts**: slows when detected, accelerates when stealthy
+- **Adapts**: stealth decays over time (gets noisier)
 
-### Tasks (3 Scenarios)
+## Tasks (3 Scenarios)
 
-| Task | Difficulty | Scenario | Compromised | Attacker Stealth |
-|---|---|---|---|---|
-| easy_1 | Easy | Script Kiddie | web_server | 0.4 (noisy) |
-| medium_1 | Medium | Ransomware Outbreak | file_server, workstations, email | 0.5 |
-| hard_1 | Hard | APT (nation-state) | app_server, database (hidden) | 0.9 (very stealthy) |
+| Task | Difficulty | Scenario | Compromised | Stealth | Key Challenge |
+|---|---|---|---|---|---|
+| easy_1 | Easy | Suspicious External Activity | web_server | 0.4 | Basic triage — clear alerts, single target |
+| medium_1 | Medium | Encryption Activity Detected | 3 systems + 1 false positive | 0.5 | Prioritization, distinguishing real from fake |
+| hard_1 | Hard | Anomalous Beacon Detected | 2 systems (1 hidden) | 0.9 | Deep investigation, discovering hidden threats |
 
-### Scoring
+## Scoring (Criticality-Weighted)
+
 ```
 35% data protection (1 - data_exfiltrated)
-25% containment (1 - attacker_progress)
-20% business continuity (services still running)
+25% containment (1 - active_threats, weighted by system criticality)
+20% business continuity (services running, weighted by service criticality)
 10% forensic completeness (systems investigated)
 10% team sustainability (stamina remaining)
 ```
 
 Compared against a naive baseline. Score > 0.5 = outperformed baseline.
+
+## Real LLM Benchmark Results
+
+Tested with Qwen/Qwen2.5-72B-Instruct:
+
+| Task | Comparison Score | LLM Strategy |
+|---|---|---|
+| easy_1 | **0.550** | Investigated + isolated web_server, full system sweep |
+| medium_1 | **0.548** | Isolated 3 threats correctly, but fell for false positive |
+| hard_1 | **0.616** | Found hidden database compromise, checked backup first (textbook IR) |
 
 ## API Endpoints
 
@@ -113,7 +130,6 @@ uvicorn server.app:app --port 7860
 export API_BASE_URL=https://router.huggingface.co/v1
 export MODEL_NAME=Qwen/Qwen2.5-72B-Instruct
 export HF_TOKEN=hf_...
-export IMAGE_NAME=bastion
 python inference.py
 ```
 
@@ -130,18 +146,18 @@ docker run -p 7860:7860 bastion
 | `API_BASE_URL` | Yes | OpenAI-compatible API endpoint |
 | `MODEL_NAME` | Yes | Model identifier |
 | `HF_TOKEN` | Yes | HuggingFace token / API key |
-| `IMAGE_NAME` | Yes | Docker image name for `from_docker_image()` |
+| `LOCAL_IMAGE_NAME` | Optional | Docker image name for `from_docker_image()` |
 
 ## What LLMs Learn From This Environment
 
-| Skill | How It's Tested |
+| Skill Tested | LLM Weakness Exposed |
 |---|---|
-| Hypothesis formation | Must interpret alerts + investigate to form attack theory |
-| Information vs action balance | Investigate first or act immediately? |
-| Risk assessment | Weigh "cost of being wrong" for each action |
-| Prioritization | Multiple systems under attack, one action per hour |
-| Adaptive strategy | Attack evolves — initial plan must be revised |
-| Resource management | Team stamina depletes, must coordinate rest |
+| Hypothesis formation from SIEM alerts | Takes alerts at face value, doesn't cross-reference |
+| Investigate vs act decision | Either over-investigates or acts without evidence |
+| False positive discrimination | Can't assess confidence levels |
+| Criticality-based prioritization | Treats all systems equally |
+| Adaptive strategy | Anchors on first hypothesis |
+| Resource management | Ignores team stamina constraints |
 
 See [DESIGN.md](DESIGN.md) for the full technical design document.
 
@@ -151,4 +167,5 @@ See [DESIGN.md](DESIGN.md) for the full technical design document.
 - **Deterministic**: Same `task_id` → same initial state and RNG seed
 - **Episode**: 12 steps (hours) or until total data breach
 - **Baseline**: Naive rotation policy (investigate → isolate → monitor → patch)
-- **Dense reward**: Per-step signal for containment, data protection, service continuity
+- **MITRE ATT&CK**: 12+ technique IDs across lateral movement, exfiltration, and false positive categories
+- **Dense reward**: 5-component criticality-weighted per-step signal + catastrophic penalties

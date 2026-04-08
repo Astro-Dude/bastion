@@ -2,9 +2,9 @@
 Bastion: Cybersecurity Incident Response — Task Definitions
 
 Three scenarios of increasing difficulty:
-  Easy:   Script kiddie — slow, noisy attacker
-  Medium: Ransomware outbreak — fast-spreading, multiple systems
-  Hard:   APT actor — stealthy, sophisticated, minimal alerts
+  Easy:   Suspicious external activity — clear alerts, single compromise
+  Medium: Encryption activity — fast-spreading, fog of war, false positives
+  Hard:   Anomalous beacon — stealthy APT, minimal clues, deep compromise
 """
 
 from __future__ import annotations
@@ -40,7 +40,6 @@ class TaskConfig(BaseModel):
 
 
 def _make_systems(compromised: List[str], monitoring: Dict[str, int] | None = None) -> List[SystemState]:
-    """Create initial system states."""
     mon = monitoring or {}
     systems = []
     for name in SYSTEM_NAMES:
@@ -58,10 +57,6 @@ def _make_systems(compromised: List[str], monitoring: Dict[str, int] | None = No
     return systems
 
 
-# ---------------------------------------------------------------------------
-# Task registry
-# ---------------------------------------------------------------------------
-
 TASKS: Dict[str, TaskConfig] = {}
 
 
@@ -69,16 +64,19 @@ def _register(cfg: TaskConfig) -> None:
     TASKS[cfg.task_id] = cfg
 
 
-# --- EASY: Script Kiddie ---
+# ---------------------------------------------------------------------------
+# EASY: Suspicious External Activity
+# ---------------------------------------------------------------------------
 _register(TaskConfig(
     task_id="easy_1",
     description=(
-        "SCENARIO: Script Kiddie Attack\n"
-        "A low-skill attacker has compromised your web server and is attempting "
-        "to move laterally. Their tools are noisy — you're getting clear alerts. "
-        "The attacker is slow but persistent. Contain the breach, investigate "
-        "affected systems, and minimize data loss.\n"
-        "INTEL: Attacker entry point is the web_server. Low stealth capability."
+        "SCENARIO: Suspicious External Activity\n"
+        "Your SOC has flagged anomalous behavior originating from the DMZ. "
+        "Multiple alerts fired in the last hour but the full scope is unclear. "
+        "Triage the situation, determine what systems have been affected, "
+        "and contain the incident before it escalates.\n"
+        "INTEL: External-facing infrastructure may be involved. "
+        "Alert fidelity is moderate. No prior incidents on these systems."
     ),
     initial_state=IncidentState(
         systems=_make_systems(
@@ -89,20 +87,34 @@ _register(TaskConfig(
             Alert(
                 source_system="web_server",
                 severity=AlertSeverity.HIGH,
-                message="Unauthorized shell access detected on web_server",
+                message="Unauthorized reverse shell spawned — parent process: apache2 (PID 3847)",
+                source_ip="198.51.100.23",
+                dest_ip="10.1.1.10",
+                mitre_technique="T1059.004",
+                mitre_tactic="Execution",
+                process_name="bash",
+                event_id="EVT-4688",
+                confidence=0.82,
                 is_true_positive=True,
                 hour=0,
             ),
             Alert(
                 source_system="firewall",
                 severity=AlertSeverity.MEDIUM,
-                message="Unusual outbound connection from web_server to unknown IP",
+                message="Outbound connection to known C2 infrastructure on port 8443",
+                source_ip="10.1.1.10",
+                dest_ip="198.51.100.23",
+                mitre_technique="T1071.001",
+                mitre_tactic="Command and Control",
+                process_name="curl",
+                event_id="EVT-5156",
+                confidence=0.65,
                 is_true_positive=True,
                 hour=0,
             ),
         ],
         attacker_progress=0.05,
-        attacker_stealth=0.4,  # noisy attacker
+        attacker_stealth=0.4,
         data_exfiltrated=0.0,
         services_disrupted=0,
         team_stamina=1.0,
@@ -120,17 +132,20 @@ _register(TaskConfig(
 ))
 
 
-# --- MEDIUM: Ransomware Outbreak ---
+# ---------------------------------------------------------------------------
+# MEDIUM: Encryption Activity Detected
+# ---------------------------------------------------------------------------
 _register(TaskConfig(
     task_id="medium_1",
     description=(
-        "SCENARIO: Ransomware Outbreak\n"
-        "Fast-spreading ransomware has hit your network. The file_server, "
-        "workstations, and email_server are already compromised and the malware "
-        "is encrypting data rapidly. Multiple alerts are firing — some are real, "
-        "some are noise from panicked automated scanners. You must stop the spread, "
-        "protect the database and backups, and keep critical services running.\n"
-        "INTEL: Ransomware entered via email_server phishing. Spreading fast."
+        "SCENARIO: Encryption Activity Detected\n"
+        "Multiple systems are reporting abnormal disk I/O and file modification "
+        "patterns. Your EDR has triggered several high-confidence alerts but the "
+        "full blast radius is unknown. Some alerts may be false positives from "
+        "panicked automated scanners. Determine the scope of the incident and "
+        "stop the spread before critical data stores are affected.\n"
+        "INTEL: Possible ransomware deployment. Suspected entry vector is phishing. "
+        "Prioritize protecting data stores and backup integrity."
     ),
     initial_state=IncidentState(
         systems=_make_systems(
@@ -141,29 +156,57 @@ _register(TaskConfig(
             Alert(
                 source_system="file_server",
                 severity=AlertSeverity.CRITICAL,
-                message="Mass file encryption detected on file_server",
+                message="Mass file encryption detected — 847 files modified in /data/shared/ with .locked extension",
+                source_ip="10.1.4.40",
+                dest_ip="10.1.4.40",
+                mitre_technique="T1486",
+                mitre_tactic="Impact",
+                process_name="crypt0r.exe",
+                event_id="EVT-4663",
+                confidence=0.94,
                 is_true_positive=True,
                 hour=0,
             ),
             Alert(
                 source_system="workstations",
                 severity=AlertSeverity.CRITICAL,
-                message="Ransomware payload executing on workstations",
+                message="Ransomware payload executing — MBR modification attempted on 3 endpoints",
+                source_ip="10.1.6.100",
+                dest_ip="10.1.6.100",
+                mitre_technique="T1486",
+                mitre_tactic="Impact",
+                process_name="taskhost.exe",
+                event_id="EVT-4688",
+                confidence=0.91,
                 is_true_positive=True,
                 hour=0,
             ),
             Alert(
                 source_system="email_server",
                 severity=AlertSeverity.HIGH,
-                message="Malicious attachment opened — email_server compromised",
+                message="Malicious macro execution in attachment 'Invoice_Q4.xlsm' — spawned powershell.exe",
+                source_ip="203.0.113.42",
+                dest_ip="10.1.5.50",
+                mitre_technique="T1566.001",
+                mitre_tactic="Initial Access",
+                process_name="OUTLOOK.EXE",
+                event_id="EVT-4688",
+                confidence=0.87,
                 is_true_positive=True,
                 hour=0,
             ),
             Alert(
                 source_system="app_server",
                 severity=AlertSeverity.MEDIUM,
-                message="Unusual CPU spike on app_server",
-                is_true_positive=False,  # false alarm
+                message="Unusual CPU utilization spike on app_server — 98% sustained for 12 minutes",
+                source_ip="10.1.2.20",
+                dest_ip="10.1.2.20",
+                mitre_technique="T1496",
+                mitre_tactic="Impact",
+                process_name="java.exe",
+                event_id="EVT-4688",
+                confidence=0.35,
+                is_true_positive=False,
                 hour=0,
             ),
         ],
@@ -177,7 +220,7 @@ _register(TaskConfig(
         management_escalated=False,
     ),
     scoring_weights={
-        "data_protection": 0.40,   # protect the data!
+        "data_protection": 0.40,
         "containment": 0.20,
         "business_continuity": 0.20,
         "forensic": 0.10,
@@ -186,43 +229,61 @@ _register(TaskConfig(
 ))
 
 
-# --- HARD: Advanced Persistent Threat ---
+# ---------------------------------------------------------------------------
+# HARD: Anomalous Beacon Detected
+# ---------------------------------------------------------------------------
 _register(TaskConfig(
     task_id="hard_1",
     description=(
-        "SCENARIO: Advanced Persistent Threat (APT)\n"
-        "A sophisticated nation-state actor has been inside your network for an "
-        "unknown duration. A single alert triggered on the app_server — but this "
-        "may be the tip of the iceberg. The attacker is highly stealthy, may have "
-        "backdoors on multiple systems, and is actively exfiltrating sensitive data "
-        "from the database. Most alerts you see will be false positives.\n"
-        "INTEL: Suspected state-sponsored actor. Entry vector unknown. "
-        "High evasion capability. Priority: find the full scope before acting."
+        "SCENARIO: Anomalous Beacon Detected\n"
+        "A single low-confidence alert was triggered by behavioral analytics on "
+        "an internal application server. The pattern is consistent with periodic "
+        "C2 beaconing but could also be a legitimate scheduled task or monitoring "
+        "agent. No other confirmed indicators exist. Your network has no enhanced "
+        "monitoring deployed.\n"
+        "INTEL: If this is a real intrusion, the adversary capability is unknown. "
+        "The dwell time could be hours or weeks. Proceed with caution — hasty "
+        "actions without investigation may alert the threat actor and accelerate "
+        "their objectives."
     ),
     initial_state=IncidentState(
         systems=_make_systems(
-            compromised=["app_server", "database"],  # 2 compromised but agent doesn't know about database
-            monitoring={},  # no monitoring deployed
+            compromised=["app_server", "database"],
+            monitoring={},
         ),
         alerts=[
             Alert(
                 source_system="app_server",
                 severity=AlertSeverity.MEDIUM,
-                message="Anomalous process detected on app_server — possible C2 beacon",
+                message="Periodic outbound HTTPS beacon to 45.77.65.211:443 — interval 60±3s, consistent with C2 framework",
+                source_ip="10.1.2.20",
+                dest_ip="45.77.65.211",
+                mitre_technique="T1071.001",
+                mitre_tactic="Command and Control",
+                process_name="svchost.exe",
+                event_id="EVT-5156",
+                confidence=0.42,
                 is_true_positive=True,
                 hour=0,
             ),
             Alert(
                 source_system="firewall",
                 severity=AlertSeverity.LOW,
-                message="Routine port scan from external IP",
+                message="Sequential port scan from 192.0.2.117 targeting DMZ range 10.1.1.0/24 — 847 SYN packets",
+                source_ip="192.0.2.117",
+                dest_ip="10.0.0.1",
+                mitre_technique="T1046",
+                mitre_tactic="Discovery",
+                process_name="",
+                event_id="EVT-5156",
+                confidence=0.18,
                 is_true_positive=False,
                 hour=0,
             ),
         ],
         attacker_progress=0.15,
-        attacker_stealth=0.9,  # very stealthy
-        data_exfiltrated=0.10,  # already got some data
+        attacker_stealth=0.9,
+        data_exfiltrated=0.10,
         services_disrupted=0,
         team_stamina=0.85,
         hour=0,
@@ -233,7 +294,7 @@ _register(TaskConfig(
         "data_protection": 0.35,
         "containment": 0.25,
         "business_continuity": 0.15,
-        "forensic": 0.15,   # investigation matters more for APT
+        "forensic": 0.15,
         "sustainability": 0.10,
     },
 ))

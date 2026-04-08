@@ -145,6 +145,16 @@ class Alert(State):
     message: str = ""
     is_true_positive: bool = True  # hidden from agent in observation
     hour: int = 0
+    # SIEM-enriched fields (all optional, backward-compatible)
+    source_ip: str = ""
+    dest_ip: str = ""
+    mitre_technique: str = ""       # e.g. "T1021.002"
+    mitre_tactic: str = ""          # e.g. "Lateral Movement"
+    process_name: str = ""          # e.g. "powershell.exe"
+    event_id: str = ""              # e.g. "EVT-4624"
+    file_hash: str = ""             # e.g. "sha256:a1b2c3..."
+    confidence: float = 0.0         # detection confidence 0.0-1.0
+    raw_log: str = ""               # simulated raw syslog line
 
 
 # ---------------------------------------------------------------------------
@@ -293,6 +303,24 @@ def make_observation(
             "message": a.message,
             "hour": a.hour,
         }
+        # SIEM-enriched fields (only include if populated)
+        if a.source_ip:
+            av["source_ip"] = a.source_ip
+        if a.dest_ip:
+            av["dest_ip"] = a.dest_ip
+        if a.mitre_technique:
+            av["mitre_technique"] = a.mitre_technique
+            av["mitre_tactic"] = a.mitre_tactic
+        if a.process_name:
+            av["process_name"] = a.process_name
+        if a.event_id:
+            av["event_id"] = a.event_id
+        if a.confidence > 0:
+            av["confidence"] = round(a.confidence, 2)
+        if a.file_hash:
+            av["file_hash"] = a.file_hash
+        if a.raw_log:
+            av["raw_log"] = a.raw_log
         if alerts_accurate:
             av["confirmed"] = a.is_true_positive
         alert_vis.append(av)
