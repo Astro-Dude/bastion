@@ -52,7 +52,7 @@ def run_baseline(task_id: str, policy_name: str = "naive") -> IncidentState:
 
     for hour in range(task.max_hours):
         action, target = policy(state, hour)
-        step_dynamics(state, action, target, rng)
+        _cost, _acc, _msgs = step_dynamics(state, action, target, rng)
 
         # Check catastrophic failure
         if state.data_exfiltrated >= 1.0:

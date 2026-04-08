@@ -261,6 +261,11 @@ class IncidentObservation(Observation):
     external_blocked: bool = Field(default=False)
     management_escalated: bool = Field(default=False)
     task_description: str = Field(default="")
+    # Team communications — messages from IR team members
+    team_messages: List[Dict[str, str]] = Field(
+        default_factory=list,
+        description="Messages from team members (may contain opinions, requests, incorrect assumptions)",
+    )
 
 
 def make_observation(
@@ -269,6 +274,7 @@ def make_observation(
     task_description: str = "",
     done: bool = False,
     reward: float | None = None,
+    team_messages: list[dict[str, str]] | None = None,
     alerts_accurate: bool = False,
 ) -> IncidentObservation:
     """Build a partially-observable view of the true state."""
@@ -361,6 +367,7 @@ def make_observation(
         external_blocked=state.external_blocked,
         management_escalated=state.management_escalated,
         task_description=task_description,
+        team_messages=team_messages or [],
         done=done,
         reward=reward,
     )

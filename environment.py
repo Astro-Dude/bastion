@@ -21,7 +21,7 @@ from models import (
     NUM_ACTIONS,
     make_observation,
 )
-from dynamics import step_dynamics
+from dynamics import step_dynamics, generate_forensic_report
 from reward import (
     compute_step_reward,
     compute_penalties,
@@ -105,7 +105,7 @@ class BastionEnvironment(Environment[IncidentAction, IncidentObservation, Incide
         prev_state = self._state.clone()
 
         # Execute transition
-        stamina_cost, alerts_accurate = step_dynamics(
+        stamina_cost, alerts_accurate, team_msgs = step_dynamics(
             self._state, action_idx, target_idx, self._rng
         )
         self._alerts_accurate = alerts_accurate
@@ -153,6 +153,7 @@ class BastionEnvironment(Environment[IncidentAction, IncidentObservation, Incide
             info["data_exfiltrated"] = round(self._state.data_exfiltrated, 4)
             info["attacker_progress"] = round(self._state.attacker_progress, 4)
             info["final_state"] = self._state.snapshot()
+            info["forensic_report"] = generate_forensic_report(self._state)
 
         obs = make_observation(
             self._state,
@@ -161,6 +162,7 @@ class BastionEnvironment(Environment[IncidentAction, IncidentObservation, Incide
             done=done,
             reward=total_reward,
             alerts_accurate=alerts_accurate,
+            team_messages=team_msgs,
         )
         obs.metadata = info
 

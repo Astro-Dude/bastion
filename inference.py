@@ -196,6 +196,15 @@ def format_observation(obs: dict, step: int, history: List[str]) -> str:
             if details:
                 parts.append(f"           {' | '.join(details)}")
 
+    # Team messages (social reasoning — opinions, requests, may be wrong)
+    team_msgs = obs.get("team_messages", [])
+    if team_msgs:
+        parts.append("\n## Team Communications")
+        for msg in team_msgs[-3:]:
+            parts.append(f"  [{msg.get('from', 'Unknown')}]")
+            parts.append(f"  \"{msg.get('message', '')}\"")
+            parts.append("")
+
     if history:
         parts.append("\n## Your recent actions")
         for h in history[-3:]:

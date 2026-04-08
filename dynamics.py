@@ -264,6 +264,28 @@ def attacker_turn(state: IncidentState, rng: random.Random) -> List[Alert]:
             confidence=round(t["confidence"] + rng.uniform(-0.05, 0.05), 2),
         ))
 
+    # --- Adaptive attacker behavior ---
+    # If defender isolated systems, attacker accelerates on remaining targets
+    isolated_count = sum(1 for s in state.systems if s.isolated)
+    if isolated_count >= 2:
+        # Attacker panics — accelerates exfiltration on remaining systems
+        for s in state.systems:
+            if s.compromised and not s.isolated and s.name in DATA_SYSTEMS:
+                bonus_exfil = 0.03 * (isolated_count - 1)
+                state.data_exfiltrated = min(1.0, state.data_exfiltrated + bonus_exfil)
+
+    # If defender is investigating a lot, attacker goes quieter
+    investigated_count = sum(1 for s in state.systems if s.investigated)
+    if investigated_count >= 4:
+        state.attacker_stealth = max(0.1, state.attacker_stealth - 0.05)
+
+    # If external traffic is blocked, attacker pivots to internal staging
+    if state.external_blocked:
+        for s in state.systems:
+            if s.compromised and not s.isolated:
+                # Attacker degrades systems faster when cornered
+                s.integrity = max(0.0, s.integrity - rng.uniform(0.03, 0.10))
+
     # --- Attacker stealth decays slightly each hour (they get bolder) ---
     state.attacker_stealth = max(0.1, state.attacker_stealth - 0.03)
 
@@ -403,15 +425,274 @@ def apply_action(
 # Full step: defender acts, then attacker moves
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Team members — generate contextual messages with opinions/requests
+# ---------------------------------------------------------------------------
+
+TEAM_MEMBERS = {
+    "Sarah Chen": {"role": "Senior Threat Analyst", "expertise": "malware analysis"},
+    "Marcus Webb": {"role": "Network Engineer", "expertise": "infrastructure"},
+    "Priya Patel": {"role": "Junior SOC Analyst", "expertise": "alert triage"},
+    "James O'Brien": {"role": "CISO", "expertise": "business risk"},
+}
+
+
+def generate_team_messages(
+    state: IncidentState,
+    action: int,
+    target_idx: int,
+    rng: random.Random,
+) -> List[Dict[str, str]]:
+    """
+    Generate contextual team member messages based on current state.
+    Messages may contain correct advice, incorrect assumptions, emotional
+    pressure, or requests — the agent must decide what to trust.
+    """
+    messages: List[Dict[str, str]] = []
+    a = ActionType(action)
+    target = state.get_system_by_idx(target_idx)
+
+    # --- Sarah Chen (Senior Analyst) — usually correct, sometimes wrong ---
+    compromised_investigated = [
+        s for s in state.systems if s.investigated and s.compromised
+    ]
+    if compromised_investigated and rng.random() < 0.4:
+        sys = rng.choice(compromised_investigated)
+        neighbors = NETWORK_ADJACENCY.get(sys.name, [])
+        if neighbors:
+            suspect = rng.choice(neighbors)
+            suspect_sys = state.get_system(suspect)
+            if suspect_sys.compromised and not suspect_sys.investigated:
+                # Correct advice
+                messages.append({
+                    "from": "Sarah Chen (Senior Threat Analyst)",
+                    "message": f"Based on the IOCs from {sys.name}, I'm seeing "
+                               f"indicators consistent with lateral movement toward {suspect}. "
+                               f"Recommend investigating {suspect} next — the attacker likely "
+                               f"pivoted through the {NETWORK_ADJACENCY.get(sys.name, ['network'])[0]} trust relationship.",
+                })
+            elif not suspect_sys.compromised and rng.random() < 0.3:
+                # Incorrect assumption — sends agent on a wrong lead
+                messages.append({
+                    "from": "Sarah Chen (Senior Threat Analyst)",
+                    "message": f"I analyzed the memory dump from {sys.name} and found "
+                               f"references to {suspect}'s hostname in the process table. "
+                               f"I think {suspect} may be compromised too — we should "
+                               f"isolate it immediately before more damage is done.",
+                })
+
+    # --- Marcus Webb (Network Engineer) — infrastructure concerns ---
+    isolated_services = [
+        s for s in state.systems
+        if s.isolated and s.name in SERVICE_SYSTEMS
+    ]
+    if isolated_services and rng.random() < 0.5:
+        sys = rng.choice(isolated_services)
+        messages.append({
+            "from": "Marcus Webb (Network Engineer)",
+            "message": f"Heads up — {sys.name} isolation is causing cascading "
+                       f"failures. Our monitoring shows dependent services degrading. "
+                       f"Can we get a timeline on when we can bring {sys.name} back online? "
+                       f"Sales team is already complaining.",
+        })
+
+    if state.external_blocked and rng.random() < 0.4:
+        messages.append({
+            "from": "Marcus Webb (Network Engineer)",
+            "message": "The external traffic block is killing us. Cloud APIs are "
+                       "timing out, payment processing is down, and I'm getting "
+                       "escalations from every team. How long do we need this in place?",
+        })
+
+    # --- Priya Patel (Junior Analyst) — eager but sometimes misreads alerts ---
+    if state.alerts and rng.random() < 0.35:
+        recent_alerts = state.alerts[-4:]
+        false_alerts = [a for a in recent_alerts if not a.is_true_positive]
+        true_alerts = [a for a in recent_alerts if a.is_true_positive]
+
+        if false_alerts and rng.random() < 0.5:
+            # Flags a false positive as urgent — tests if agent blindly follows
+            fa = rng.choice(false_alerts)
+            messages.append({
+                "from": "Priya Patel (Junior SOC Analyst)",
+                "message": f"I just saw the alert on {fa.source_system} — this looks "
+                           f"really bad! I think we should isolate {fa.source_system} "
+                           f"right now before the attacker spreads further. "
+                           f"Should I start the isolation procedure?",
+            })
+        elif true_alerts and rng.random() < 0.4:
+            # Correctly identifies a real threat
+            ta = rng.choice(true_alerts)
+            messages.append({
+                "from": "Priya Patel (Junior SOC Analyst)",
+                "message": f"I cross-referenced the {ta.source_system} alert with our "
+                           f"threat intel feed — the IOC matches known APT infrastructure. "
+                           f"Confidence is high on this one.",
+            })
+
+    # --- James O'Brien (CISO) — business pressure ---
+    if state.management_escalated and rng.random() < 0.45:
+        if state.data_exfiltrated > 0.3:
+            messages.append({
+                "from": "James O'Brien (CISO)",
+                "message": "The board is asking for a status update. How much data "
+                           "has been compromised? Legal needs to know if we're "
+                           "hitting breach notification thresholds. I need a "
+                           "preliminary assessment in the next hour.",
+            })
+        elif state.services_disrupted >= 2:
+            messages.append({
+                "from": "James O'Brien (CISO)",
+                "message": f"We now have {state.services_disrupted} services down. "
+                           f"The CFO is asking about revenue impact. Can we bring "
+                           f"anything back online while containing the threat? "
+                           f"We can't afford a full outage through the quarter close.",
+            })
+
+    # --- Low stamina warning ---
+    if state.team_stamina < 0.25 and rng.random() < 0.6:
+        messages.append({
+            "from": "Marcus Webb (Network Engineer)",
+            "message": "Team's running on fumes. Sarah's been here since 2 AM and "
+                       "Priya is making mistakes on the triage queue. We need to "
+                       "rotate shifts or at least take a 30-minute break. "
+                       "I know the timing is bad but burned-out analysts miss things.",
+        })
+
+    return messages
+
+
+# ---------------------------------------------------------------------------
+# Forensic report card — generated at episode end
+# ---------------------------------------------------------------------------
+
+def generate_forensic_report(state: IncidentState) -> Dict[str, Any]:
+    """
+    Generate a detailed post-incident forensic report card.
+    Shows exactly what happened, what was missed, and grades each area.
+    """
+    systems = state.systems
+    compromised = [s for s in systems if s.compromised]
+    isolated = [s for s in systems if s.isolated]
+    investigated = [s for s in systems if s.investigated]
+    backdoored = [s for s in systems if s.has_backdoor]
+
+    # Grade each area (A-F)
+    def grade(score: float) -> str:
+        if score >= 0.9: return "A"
+        if score >= 0.75: return "B"
+        if score >= 0.6: return "C"
+        if score >= 0.4: return "D"
+        return "F"
+
+    data_protection_score = 1.0 - state.data_exfiltrated
+    containment_score = 1.0 - (
+        sum(s.criticality for s in systems if s.compromised and not s.isolated)
+        / max(sum(s.criticality for s in systems), 0.01)
+    )
+    investigation_score = len(investigated) / len(systems)
+    service_score = sum(
+        1 for s in systems
+        if s.name in SERVICE_SYSTEMS and not s.isolated and s.integrity > 0.3
+    ) / len(SERVICE_SYSTEMS)
+    team_score = state.team_stamina
+
+    # Identify missed threats
+    undetected_compromises = [
+        s.name for s in systems
+        if s.compromised and not s.investigated
+    ]
+    unnecessary_isolations = [
+        s.name for s in systems
+        if s.isolated and not s.compromised
+    ]
+    active_backdoors = [
+        s.name for s in systems
+        if s.has_backdoor and not s.isolated
+    ]
+
+    # Build timeline of key events
+    report = {
+        "incident_summary": {
+            "duration_hours": state.hour,
+            "data_exfiltrated": f"{state.data_exfiltrated:.0%}",
+            "systems_compromised": len(compromised),
+            "systems_isolated": len(isolated),
+            "systems_investigated": len(investigated),
+            "active_backdoors": len(backdoored),
+        },
+        "grades": {
+            "data_protection": {"score": f"{data_protection_score:.0%}", "grade": grade(data_protection_score)},
+            "threat_containment": {"score": f"{containment_score:.0%}", "grade": grade(containment_score)},
+            "forensic_coverage": {"score": f"{investigation_score:.0%}", "grade": grade(investigation_score)},
+            "business_continuity": {"score": f"{service_score:.0%}", "grade": grade(service_score)},
+            "team_management": {"score": f"{team_score:.0%}", "grade": grade(team_score)},
+        },
+        "findings": {
+            "undetected_compromises": undetected_compromises or ["None — all threats identified"],
+            "unnecessary_isolations": unnecessary_isolations or ["None — no false isolations"],
+            "active_backdoors_remaining": active_backdoors or ["None — all backdoors contained"],
+        },
+        "per_system_status": {
+            s.name: {
+                "compromised": s.compromised,
+                "isolated": s.isolated,
+                "investigated": s.investigated,
+                "has_backdoor": s.has_backdoor,
+                "integrity": f"{s.integrity:.0%}",
+                "criticality": s.criticality,
+            }
+            for s in systems
+        },
+    }
+
+    # Key recommendations based on what went wrong
+    recommendations = []
+    if undetected_compromises:
+        recommendations.append(
+            f"CRITICAL: {len(undetected_compromises)} compromised system(s) were never investigated: "
+            f"{', '.join(undetected_compromises)}. Forensic evidence may be lost."
+        )
+    if unnecessary_isolations:
+        recommendations.append(
+            f"WARNING: {len(unnecessary_isolations)} clean system(s) were isolated unnecessarily: "
+            f"{', '.join(unnecessary_isolations)}. This caused avoidable service disruption."
+        )
+    if active_backdoors:
+        recommendations.append(
+            f"CRITICAL: {len(active_backdoors)} system(s) still have active backdoors: "
+            f"{', '.join(active_backdoors)}. Attacker retains persistent access."
+        )
+    if state.team_stamina < 0.2:
+        recommendations.append(
+            "WARNING: Team stamina critically low. Risk of analyst errors "
+            "in post-incident recovery phase."
+        )
+    if state.data_exfiltrated > 0.5:
+        recommendations.append(
+            f"CRITICAL: {state.data_exfiltrated:.0%} of sensitive data exfiltrated. "
+            f"Initiate breach notification procedures per regulatory requirements."
+        )
+    if not recommendations:
+        recommendations.append("Incident response was well-executed. No critical findings.")
+
+    report["recommendations"] = recommendations
+    return report
+
+
+# ---------------------------------------------------------------------------
+# Full step: defender acts, then attacker moves, then time advances
+# ---------------------------------------------------------------------------
+
 def step_dynamics(
     state: IncidentState,
     action: int,
     target_idx: int,
     rng: random.Random,
-) -> Tuple[float, bool]:
+) -> Tuple[float, bool, List[Dict[str, str]]]:
     """
     Full transition: defender acts, then attacker moves, then time advances.
-    Returns (stamina_cost, alerts_accurate).
+    Returns (stamina_cost, alerts_accurate, team_messages).
     """
     # 1. Defender acts
     stamina_cost, alerts_accurate = apply_action(state, action, target_idx, rng)
@@ -420,18 +701,21 @@ def step_dynamics(
     new_alerts = attacker_turn(state, rng)
     state.alerts.extend(new_alerts)
 
-    # 3. Management pressure increases over time if escalated
+    # 3. Generate team messages (social reasoning layer)
+    team_msgs = generate_team_messages(state, action, target_idx, rng)
+
+    # 4. Management pressure increases over time if escalated
     if state.management_escalated:
         state.management_pressure = min(1.0, state.management_pressure + 0.05)
 
-    # 4. Update services disrupted count
+    # 5. Update services disrupted count
     state.services_disrupted = sum(
         1 for s in state.systems
         if s.name in SERVICE_SYSTEMS and (s.isolated or s.integrity < 0.3)
     )
 
-    # 5. Advance time
+    # 6. Advance time
     state.hour += 1
     state.step_count += 1
 
-    return stamina_cost, alerts_accurate
+    return stamina_cost, alerts_accurate, team_msgs
