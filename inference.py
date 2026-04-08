@@ -9,13 +9,15 @@ import asyncio
 import json
 import os
 import re
+import sys
 import textwrap
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from openai import OpenAI
 
-from client import BastionEnv
-from models import IncidentAction, ACTION_NAMES, NUM_ACTIONS, SYSTEM_NAMES
+from models import IncidentAction, IncidentObservation, ACTION_NAMES, NUM_ACTIONS, SYSTEM_NAMES
+from environment import BastionEnvironment
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -35,6 +37,35 @@ MAX_STEPS = 12
 TEMPERATURE = 0.3
 MAX_TOKENS = 400
 TASKS = ["easy_1", "medium_1", "hard_1"]
+
+
+# ---------------------------------------------------------------------------
+# Local environment wrapper (matches EnvClient StepResult interface)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class StepResult:
+    observation: IncidentObservation
+    reward: Optional[float] = None
+    done: bool = False
+
+
+class LocalEnv:
+    """Wraps BastionEnvironment to match the async EnvClient interface."""
+
+    def __init__(self) -> None:
+        self._env = BastionEnvironment()
+
+    async def reset(self, **kwargs: Any) -> StepResult:
+        obs = self._env.reset(**kwargs)
+        return StepResult(observation=obs, reward=obs.reward, done=obs.done)
+
+    async def step(self, action: IncidentAction) -> StepResult:
+        obs = self._env.step(action)
+        return StepResult(observation=obs, reward=obs.reward, done=obs.done)
+
+    async def close(self) -> None:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -120,7 +151,6 @@ def format_observation(obs: dict, step: int, history: List[str]) -> str:
     parts.append(f"- External traffic blocked: {obs.get('external_blocked', False)}")
     parts.append(f"- Management escalated: {obs.get('management_escalated', False)}")
 
-    # System statuses
     systems = obs.get("systems_visible", [])
     if systems:
         parts.append("\n## Systems")
@@ -139,9 +169,9 @@ def format_observation(obs: dict, step: int, history: List[str]) -> str:
                 status_parts.append("patched")
             status_parts.append(f"integrity={s.get('integrity', 1.0):.0%}")
             status_parts.append(f"monitoring={s.get('monitoring_level', 0)}")
-            parts.append(f"  [{SYSTEM_NAMES.index(s['name'])}] {s['name']:16s} | {', '.join(status_parts)}")
+            idx = SYSTEM_NAMES.index(s['name']) if s['name'] in SYSTEM_NAMES else 0
+            parts.append(f"  [{idx}] {s['name']:16s} | {', '.join(status_parts)}")
 
-    # Alerts
     alerts = obs.get("alert_queue", [])
     if alerts:
         parts.append("\n## Recent Alerts")
@@ -178,7 +208,7 @@ def parse_response(text: str) -> tuple[int, int]:
 # Run one task
 # ---------------------------------------------------------------------------
 
-async def run_task(env: BastionEnv, task_id: str, client: OpenAI) -> float:
+async def run_task(env, task_id: str, client: OpenAI) -> float:
     history: List[str] = []
     messages: List[Dict[str, str]] = []
     rewards: List[float] = []
@@ -202,7 +232,7 @@ async def run_task(env: BastionEnv, task_id: str, client: OpenAI) -> float:
             try:
                 completion = client.chat.completions.create(
                     model=MODEL_NAME,
-                    messages=[{"role": "system", "content": SYSTEM_PROMPT}] + messages,
+                    messages=[{"role": "system", "content": SYSTEM_PROMPT}] + messages[-6:],
                     max_tokens=MAX_TOKENS,
                     temperature=TEMPERATURE,
                     stream=False,
@@ -220,7 +250,9 @@ async def run_task(env: BastionEnv, task_id: str, client: OpenAI) -> float:
             obs = result.observation.model_dump()
             reward = result.reward or 0.0
             done = result.done
-            error = obs.get("metadata", {}).get("error") if isinstance(obs.get("metadata"), dict) else None
+            error = None
+            if isinstance(obs.get("metadata"), dict):
+                error = obs["metadata"].get("error")
 
             rewards.append(reward)
             steps_taken = step
@@ -251,12 +283,47 @@ async def run_task(env: BastionEnv, task_id: str, client: OpenAI) -> float:
 
 
 # ---------------------------------------------------------------------------
+# Create environment (Docker → HF Space → Local fallback)
+# ---------------------------------------------------------------------------
+
+async def create_env():
+    """Try Docker image first, then HF Space, then local environment."""
+
+    # 1. Try Docker if LOCAL_IMAGE_NAME is set
+    if LOCAL_IMAGE_NAME:
+        try:
+            from client import BastionEnv
+            print(f"[DEBUG] Trying Docker image: {LOCAL_IMAGE_NAME}", flush=True)
+            env = await BastionEnv.from_docker_image(LOCAL_IMAGE_NAME)
+            print("[DEBUG] Docker environment connected", flush=True)
+            return env
+        except Exception as e:
+            print(f"[DEBUG] Docker failed: {e}", flush=True)
+
+    # 2. Try connecting to HF Space
+    hf_space_url = os.getenv("HF_SPACE_URL", "https://astro-dude-bastion.hf.space")
+    try:
+        from client import BastionEnv
+        print(f"[DEBUG] Trying HF Space: {hf_space_url}", flush=True)
+        env = BastionEnv(base_url=hf_space_url)
+        await env.connect()
+        print("[DEBUG] HF Space environment connected", flush=True)
+        return env
+    except Exception as e:
+        print(f"[DEBUG] HF Space failed: {e}", flush=True)
+
+    # 3. Fallback to local environment (always works)
+    print("[DEBUG] Using local environment", flush=True)
+    return LocalEnv()
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 async def main() -> None:
     client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
-    env = await BastionEnv.from_docker_image(LOCAL_IMAGE_NAME)
+    env = await create_env()
 
     try:
         for task_id in TASKS:
