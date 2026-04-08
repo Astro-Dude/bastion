@@ -65,14 +65,39 @@ Each alert includes: MITRE technique ID + tactic, source/dest IPs, process name,
 | 8 | hunt_threat | Proactively search for attacker | May alert the attacker |
 | 9 | coordinate_team | Rest and recover stamina | Wastes an hour |
 
-## Attacker Simulation
+## Attacker Simulation (Adaptive)
 
 Realistic kill chain each hour:
 - **Lateral movement** through network adjacency graph (SMB shares, RDP, WinRM, pass-the-hash)
 - **Data exfiltration** from database, file_server, email_server, backup_server (HTTPS, DNS tunneling, C2)
 - **Backdoor installation** for persistence
 - **Integrity degradation** of compromised systems
-- **Adapts**: stealth decays over time (gets noisier)
+
+**The attacker adapts to your strategy:**
+| Your Action | Attacker Response |
+|---|---|
+| Isolate 2+ systems | Panics — accelerates exfiltration on remaining targets |
+| Investigate 4+ systems | Goes quiet — reduces activity to avoid detection |
+| Block external traffic | Pivots to destruction — degrades systems faster |
+
+## Team Communications (Social Reasoning)
+
+Four IR team members send contextual messages — some helpful, some misleading:
+- **Sarah Chen** (Senior Analyst) — usually correct intel, occasionally wrong assumptions
+- **Priya Patel** (Junior Analyst) — panics about false positives, urges unnecessary isolations
+- **Marcus Webb** (Network Engineer) — pressures you to restore services prematurely
+- **James O'Brien** (CISO) — demands speed and status updates, creates time pressure
+
+The agent must decide **who to trust** and resist social pressure to make bad decisions.
+
+## Post-Incident Forensic Report
+
+At episode end, a detailed report card grades the response (A-F) with specific findings:
+```
+Grades: data_protection=B | threat_containment=A | forensic_coverage=D
+CRITICAL: 2 compromised systems were never investigated: app_server, database
+WARNING: 1 clean system isolated unnecessarily: firewall
+```
 
 ## Tasks (3 Scenarios)
 
@@ -96,13 +121,21 @@ Compared against a naive baseline. Score > 0.5 = outperformed baseline.
 
 ## Real LLM Benchmark Results
 
-Tested with Qwen/Qwen2.5-72B-Instruct:
+### Gemini 2.0 Flash (full runs)
+| Task | Score | Forensic Grades | Strategy |
+|---|---|---|---|
+| easy_1 | **0.535** | A, A, D, B, F | Contained threat, deployed monitoring, but isolated clean firewall |
+| medium_1 | **0.642** | B, A, D, D, F | `analyze_alerts` first, blocked external traffic early, isolated all threats |
+| hard_1 | **0.641** | B, A, D, F, F | Isolated database without investigating (risky but correct), blocked traffic |
 
-| Task | Comparison Score | LLM Strategy |
+### Qwen 2.5 72B
+| Task | Score | Strategy |
 |---|---|---|
-| easy_1 | **0.550** | Investigated + isolated web_server, full system sweep |
-| medium_1 | **0.548** | Isolated 3 threats correctly, but fell for false positive |
-| hard_1 | **0.616** | Found hidden database compromise, checked backup first (textbook IR) |
+| easy_1 | **0.572** | Full investigation sweep, analyzed alerts, deployed monitoring |
+| medium_1 | **0.528** | Verified alerts first — learned from confidence scores |
+| hard_1 | **0.616** | Found hidden database compromise, checked backup before restoring |
+
+**Key finding**: Both models fail at team stamina management (F grade) and fall for false positives. Gemini plays aggressively, Qwen plays methodically — different strategies, different tradeoffs.
 
 ## API Endpoints
 
@@ -154,10 +187,11 @@ docker run -p 7860:7860 bastion
 |---|---|
 | Hypothesis formation from SIEM alerts | Takes alerts at face value, doesn't cross-reference |
 | Investigate vs act decision | Either over-investigates or acts without evidence |
-| False positive discrimination | Can't assess confidence levels |
+| False positive discrimination | Can't assess confidence levels — acts on 35% alerts |
 | Criticality-based prioritization | Treats all systems equally |
-| Adaptive strategy | Anchors on first hypothesis |
-| Resource management | Ignores team stamina constraints |
+| Social reasoning / filtering team advice | Follows junior analyst's panic, complies with authority pressure |
+| Adapting to adaptive attacker | Doesn't notice attacker changing behavior after isolations |
+| Resource management | Ignores team stamina — every test run ends at F grade |
 
 See [DESIGN.md](DESIGN.md) for the full technical design document.
 
