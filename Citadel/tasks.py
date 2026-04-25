@@ -18,7 +18,7 @@ from __future__ import annotations
 import hashlib
 from typing import Any, Dict, List
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from models import (
     AlertSeverity,
@@ -31,6 +31,8 @@ from models import (
 
 
 class TaskConfig(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     task_id: str
     description: str
     initial_state: IncidentState

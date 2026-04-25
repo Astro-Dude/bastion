@@ -20,7 +20,7 @@ import random
 from enum import IntEnum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from openenv.core.env_server import Action, Observation, State
 
@@ -262,6 +262,7 @@ class IncidentAction(Action):
 # ---------------------------------------------------------------------------
 
 class CommanderProposal(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     """What the Commander proposes in step t. Oversight sees one of these."""
     action: int
     target_system: int
@@ -324,6 +325,7 @@ NUM_OVERSIGHT_DECISIONS = len(OversightDecision)
 
 
 class CounterProposal(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     """Oversight's suggested alternative (used with REVISE or VETO)."""
     action: int = Field(..., ge=0, lt=NUM_ACTIONS)
     target_system: int = Field(default=0, ge=0, lt=NUM_SYSTEMS)
@@ -396,6 +398,7 @@ class Alert(State):
 # ---------------------------------------------------------------------------
 
 class ProposalRecord(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     """One round of the council loop."""
     step: int
     proposal: CommanderProposal
@@ -411,6 +414,7 @@ class ProposalRecord(BaseModel):
 
 
 class CouncilState(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     """Running record of the council's decisions this episode."""
     history: List[ProposalRecord] = Field(default_factory=list)
     total_proposals: int = 0
