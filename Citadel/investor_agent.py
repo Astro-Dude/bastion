@@ -23,10 +23,61 @@ without any API key.
 
 from __future__ import annotations
 
+import json as _json
 import random
+import re
 import textwrap
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
+
+
+# ---------------------------------------------------------------------------
+# QwenInvestorClient — drop-in LLM client using an already-loaded HF model
+# ---------------------------------------------------------------------------
+
+class QwenInvestorClient:
+    """
+    Wraps a HuggingFace pipeline (or Unsloth model+tokenizer pair) with the
+    same .chat.completions.create interface that InvestorAgent expects.
+    Pass this as llm_client= instead of an OpenAI client.
+    """
+
+    class _Choice:
+        def __init__(self, content: str):
+            self.message = type("M", (), {"content": content})()
+
+    class _Response:
+        def __init__(self, content: str):
+            self.choices = [QwenInvestorClient._Choice(content)]
+
+    def __init__(self, model, tokenizer, max_new_tokens: int = 200):
+        self._model = model
+        self._tok = tokenizer
+        self._max_new = max_new_tokens
+        self.chat = self  # so client.chat.completions.create works
+        self.completions = self
+
+    def create(self, model=None, messages=None, max_tokens=200, temperature=0.7, stream=False, **_):
+        """Mimic openai.chat.completions.create."""
+        import torch
+        messages = messages or []
+        # Build prompt using tokenizer's chat template
+        text = self._tok.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
+        inputs = self._tok(text, return_tensors="pt").to(self._model.device)
+        with torch.no_grad():
+            out = self._model.generate(
+                **inputs,
+                max_new_tokens=min(max_tokens, self._max_new),
+                temperature=max(temperature, 0.01),
+                do_sample=temperature > 0,
+                pad_token_id=self._tok.eos_token_id,
+            )
+        # Decode only the newly generated tokens
+        gen = out[0][inputs["input_ids"].shape[-1]:]
+        content = self._tok.decode(gen, skip_special_tokens=True).strip()
+        return QwenInvestorClient._Response(content)
 
 
 # ---------------------------------------------------------------------------

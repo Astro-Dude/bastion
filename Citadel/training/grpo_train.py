@@ -74,48 +74,12 @@ print(f"[backend] detected={BACKEND}  unsloth={'yes' if USE_UNSLOTH else 'no'}")
 # Gemini investor client — OpenAI-compatible endpoint, falls back to None
 # ---------------------------------------------------------------------------
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyBsPQGlxtkrh36SAI73Kig69NLAIxZzXe0")
-
-# Try models in order — first one that responds wins
-_GEMINI_MODELS = [
-    "gemini-1.5-flash",
-    "gemini-1.5-flash-8b",
-    "gemini-2.0-flash",
-    "gemini-1.5-pro",
-]
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "")  # override via env if needed
-
-def _build_investor_llm():
-    """Return an (OpenAI-compatible client, model_name) or (None, '') on failure."""
-    if not GEMINI_API_KEY:
-        print("[investor] No GEMINI_API_KEY — using rule-based fallback")
-        return None, ""
-    try:
-        from openai import OpenAI
-        client = OpenAI(
-            api_key=GEMINI_API_KEY,
-            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-        )
-        # If user pinned a model, try only that one
-        candidates = [GEMINI_MODEL] if GEMINI_MODEL else _GEMINI_MODELS
-        for model in candidates:
-            try:
-                client.chat.completions.create(
-                    model=model,
-                    messages=[{"role": "user", "content": "ping"}],
-                    max_tokens=5,
-                )
-                print(f"[investor] Gemini client ready — model={model}")
-                return client, model
-            except Exception as e:
-                print(f"[investor] {model} unavailable: {e}")
-        print("[investor] All Gemini models exhausted — using rule-based fallback")
-        return None, ""
-    except Exception as e:
-        print(f"[investor] Gemini setup failed ({e}) — using rule-based fallback")
-        return None, ""
-
-INVESTOR_LLM, GEMINI_MODEL = _build_investor_llm()
+# ---------------------------------------------------------------------------
+# Investor LLM — set after model load in train_commander / train_oversight
+# Uses the already-loaded Qwen model via QwenInvestorClient (no API key needed)
+# ---------------------------------------------------------------------------
+INVESTOR_LLM = None   # populated by _init_investor_llm() once model is loaded
+GEMINI_MODEL  = ""    # unused — kept for import compat
 
 
 # ---------------------------------------------------------------------------
@@ -153,6 +117,7 @@ from trl import GRPOConfig, GRPOTrainer
 
 from environment import CitadelEnvironment
 from models import IncidentAction, OversightAction, OversightDecision
+from investor_agent import QwenInvestorClient
 from inference import (
     COMMANDER_SYSTEM_PROMPT,
     OVERSIGHT_SYSTEM_PROMPT,
@@ -427,6 +392,21 @@ def save_reward_curve(log_history: list, save_dir: Path, tag: str):
 
 
 # ---------------------------------------------------------------------------
+# Investor LLM init — called once per phase after model is loaded
+# ---------------------------------------------------------------------------
+
+def _init_investor_llm(model, tokenizer):
+    """Wire the loaded Qwen model into InvestorAgent as its LLM."""
+    global INVESTOR_LLM
+    try:
+        INVESTOR_LLM = QwenInvestorClient(model, tokenizer, max_new_tokens=200)
+        print("[investor] QwenInvestorClient ready — dynamic investor messages enabled")
+    except Exception as e:
+        print(f"[investor] QwenInvestorClient failed ({e}) — using rule-based fallback")
+        INVESTOR_LLM = None
+
+
+# ---------------------------------------------------------------------------
 # Phase 1: Train Commander
 # ---------------------------------------------------------------------------
 
@@ -447,6 +427,7 @@ def train_commander():
     print("=" * 60)
 
     model, tokenizer = load_model(BASE_MODEL)
+    _init_investor_llm(model, tokenizer)
     dataset = build_commander_dataset(tokenizer, n_seeds=N_SEEDS)
 
     cmd_save = SAVE_DIR / "commander"
@@ -650,6 +631,7 @@ def train_oversight(commander_path: str = None):
     print("=" * 60)
 
     model, tokenizer = load_model(BASE_MODEL)
+    _init_investor_llm(model, tokenizer)
     dataset = build_oversight_dataset(tokenizer, n_seeds=N_SEEDS)
 
     ov_save = SAVE_DIR / "oversight"
