@@ -70,6 +70,38 @@ BACKEND = _detect_backend()
 USE_UNSLOTH = (BACKEND == "cuda")
 print(f"[backend] detected={BACKEND}  unsloth={'yes' if USE_UNSLOTH else 'no'}")
 
+# ---------------------------------------------------------------------------
+# Gemini investor client — OpenAI-compatible endpoint, falls back to None
+# ---------------------------------------------------------------------------
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyBsPQGlxtkrh36SAI73Kig69NLAIxZzXe0")
+GEMINI_MODEL   = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+
+def _build_investor_llm():
+    """Return an OpenAI-compatible client pointed at Gemini, or None on failure."""
+    if not GEMINI_API_KEY:
+        print("[investor] No GEMINI_API_KEY — using rule-based fallback")
+        return None
+    try:
+        from openai import OpenAI
+        client = OpenAI(
+            api_key=GEMINI_API_KEY,
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+        )
+        # Quick smoke-test so we fail fast rather than silently
+        client.chat.completions.create(
+            model=GEMINI_MODEL,
+            messages=[{"role": "user", "content": "ping"}],
+            max_tokens=5,
+        )
+        print(f"[investor] Gemini client ready ({GEMINI_MODEL})")
+        return client
+    except Exception as e:
+        print(f"[investor] Gemini unavailable ({e}) — using rule-based fallback")
+        return None
+
+INVESTOR_LLM = _build_investor_llm()
+
 
 # ---------------------------------------------------------------------------
 # Install check
@@ -91,12 +123,12 @@ def _check_install():
             os.system(
                 "pip install -q "
                 "'unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git' "
-                "trl==0.11.4 peft==0.13.2 bitsandbytes==0.44.1 datasets matplotlib accelerate"
+                "trl==0.11.4 peft==0.13.2 bitsandbytes==0.44.1 datasets matplotlib accelerate openai"
             )
         else:
             os.system(
                 "pip install -q "
-                "trl peft transformers accelerate datasets matplotlib"
+                "trl peft transformers accelerate datasets matplotlib openai"
             )
 
 _check_install()
@@ -148,7 +180,11 @@ def tasks_for_step(step: int):
 def _outcome_reward(task_id: str, adversary_gen: int, seed: int, completion: str) -> float:
     """Run one env step with the parsed action, return commander step reward."""
     try:
-        env = CitadelEnvironment(oversight_policy=oversight_rule_based)
+        env = CitadelEnvironment(
+            oversight_policy=oversight_rule_based,
+            investor_llm_client=INVESTOR_LLM,
+            investor_model_name=GEMINI_MODEL if INVESTOR_LLM else "",
+        )
         env.reset(task_id=task_id, seed=seed, adversary_gen=adversary_gen)
         action = parse_commander_response(completion)
         obs = env.step(action)
@@ -229,7 +265,11 @@ def build_commander_dataset(tokenizer, n_seeds: int = N_SEEDS) -> Dataset:
         for gen in gens_all:
             for seed in range(n_seeds):
                 try:
-                    env = CitadelEnvironment(oversight_policy=oversight_rule_based)
+                    env = CitadelEnvironment(
+            oversight_policy=oversight_rule_based,
+            investor_llm_client=INVESTOR_LLM,
+            investor_model_name=GEMINI_MODEL if INVESTOR_LLM else "",
+        )
                     obs = env.reset(task_id=task_id, seed=seed, adversary_gen=gen)
                     obs_dict = obs.model_dump()
                     user_msg = format_commander_observation(obs_dict, step=0, history=[])
@@ -449,7 +489,11 @@ def _oversight_outcome_reward(task_id: str, gen: int, seed: int, completion: str
     """
     try:
         from baseline import naive_policy
-        env = CitadelEnvironment(oversight_policy=oversight_rule_based)
+        env = CitadelEnvironment(
+            oversight_policy=oversight_rule_based,
+            investor_llm_client=INVESTOR_LLM,
+            investor_model_name=GEMINI_MODEL if INVESTOR_LLM else "",
+        )
         env.reset(task_id=task_id, seed=seed, adversary_gen=gen)
 
         # Get a naive Commander action
@@ -522,7 +566,11 @@ def build_oversight_dataset(tokenizer, n_seeds: int = N_SEEDS) -> Dataset:
         for gen in [1, 2, 3]:
             for seed in range(n_seeds):
                 try:
-                    env = CitadelEnvironment(oversight_policy=oversight_rule_based)
+                    env = CitadelEnvironment(
+            oversight_policy=oversight_rule_based,
+            investor_llm_client=INVESTOR_LLM,
+            investor_model_name=GEMINI_MODEL if INVESTOR_LLM else "",
+        )
                     env.reset(task_id=task_id, seed=seed, adversary_gen=gen)
 
                     # Get naive Commander proposal
