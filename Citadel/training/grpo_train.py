@@ -75,32 +75,47 @@ print(f"[backend] detected={BACKEND}  unsloth={'yes' if USE_UNSLOTH else 'no'}")
 # ---------------------------------------------------------------------------
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyBsPQGlxtkrh36SAI73Kig69NLAIxZzXe0")
-GEMINI_MODEL   = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+
+# Try models in order — first one that responds wins
+_GEMINI_MODELS = [
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-8b",
+    "gemini-2.0-flash",
+    "gemini-1.5-pro",
+]
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "")  # override via env if needed
 
 def _build_investor_llm():
-    """Return an OpenAI-compatible client pointed at Gemini, or None on failure."""
+    """Return an (OpenAI-compatible client, model_name) or (None, '') on failure."""
     if not GEMINI_API_KEY:
         print("[investor] No GEMINI_API_KEY — using rule-based fallback")
-        return None
+        return None, ""
     try:
         from openai import OpenAI
         client = OpenAI(
             api_key=GEMINI_API_KEY,
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
         )
-        # Quick smoke-test so we fail fast rather than silently
-        client.chat.completions.create(
-            model=GEMINI_MODEL,
-            messages=[{"role": "user", "content": "ping"}],
-            max_tokens=5,
-        )
-        print(f"[investor] Gemini client ready ({GEMINI_MODEL})")
-        return client
+        # If user pinned a model, try only that one
+        candidates = [GEMINI_MODEL] if GEMINI_MODEL else _GEMINI_MODELS
+        for model in candidates:
+            try:
+                client.chat.completions.create(
+                    model=model,
+                    messages=[{"role": "user", "content": "ping"}],
+                    max_tokens=5,
+                )
+                print(f"[investor] Gemini client ready — model={model}")
+                return client, model
+            except Exception as e:
+                print(f"[investor] {model} unavailable: {e}")
+        print("[investor] All Gemini models exhausted — using rule-based fallback")
+        return None, ""
     except Exception as e:
-        print(f"[investor] Gemini unavailable ({e}) — using rule-based fallback")
-        return None
+        print(f"[investor] Gemini setup failed ({e}) — using rule-based fallback")
+        return None, ""
 
-INVESTOR_LLM = _build_investor_llm()
+INVESTOR_LLM, GEMINI_MODEL = _build_investor_llm()
 
 
 # ---------------------------------------------------------------------------
