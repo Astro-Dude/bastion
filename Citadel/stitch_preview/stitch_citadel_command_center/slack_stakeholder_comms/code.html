@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Citadel Command Center - Slack Workspace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-primary-fixed-variant": "#004882",
+                "inverse-primary": "#0060aa",
+                "secondary": "#d8baff",
+                "on-primary-container": "#003a6b",
+                "tertiary-container": "#10bc3f",
+                "surface-container-lowest": "#0a0e14",
+                "tertiary": "#4be260",
+                "surface-dim": "#10141a",
+                "on-primary-fixed": "#001c38",
+                "inverse-on-surface": "#2d3137",
+                "secondary-fixed-dim": "#d8baff",
+                "on-secondary-fixed-variant": "#5b2b9a",
+                "on-tertiary-fixed": "#002205",
+                "on-tertiary": "#00390c",
+                "on-secondary": "#430882",
+                "surface-container-low": "#181c22",
+                "surface": "#10141a",
+                "primary-fixed": "#d3e4ff",
+                "surface-variant": "#31353c",
+                "error-container": "#93000a",
+                "secondary-fixed": "#eddcff",
+                "on-background": "#dfe2eb",
+                "surface-container-highest": "#31353c",
+                "surface-container": "#1c2026",
+                "on-tertiary-fixed-variant": "#005316",
+                "on-surface": "#dfe2eb",
+                "primary": "#a2c9ff",
+                "on-error-container": "#ffdad6",
+                "primary-container": "#58a6ff",
+                "on-secondary-container": "#cda8ff",
+                "on-surface-variant": "#c0c7d4",
+                "on-secondary-fixed": "#290055",
+                "tertiary-fixed": "#6fff7b",
+                "on-tertiary-container": "#004310",
+                "surface-bright": "#353940",
+                "on-primary": "#00315c",
+                "tertiary-fixed-dim": "#4be260",
+                "primary-fixed-dim": "#a2c9ff",
+                "outline-variant": "#414752",
+                "error": "#ffb4ab",
+                "background": "#10141a",
+                "outline": "#8b919d",
+                "on-error": "#690005",
+                "inverse-surface": "#dfe2eb",
+                "surface-tint": "#a2c9ff",
+                "secondary-container": "#5d2d9c",
+                "surface-container-high": "#262a31"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "md": "16px",
+                "xs": "4px",
+                "unit": "4px",
+                "margin": "24px",
+                "gutter": "16px",
+                "lg": "24px",
+                "xl": "32px",
+                "sm": "8px"
+            },
+            "fontFamily": {
+                "h2": ["Inter"],
+                "data-lg": ["JetBrains Mono"],
+                "label-caps": ["Inter"],
+                "h1": ["Inter"],
+                "body-md": ["Inter"],
+                "data-sm": ["JetBrains Mono"],
+                "data-md": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                "h2": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                "data-lg": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                "h1": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                "data-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                "data-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #58a6ff; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- SideNavBar (Shared Component) -->
+<aside class="bg-[#0d1117] border-r border-[#30363d] h-screen w-64 flex flex-col pt-4 space-y-2 shrink-0">
+<div class="px-6 mb-6">
+<div class="font-bold text-[#58a6ff] text-xl tracking-widest font-h2">CITADEL</div>
+<div class="text-slate-500 font-label-caps text-[10px]">SOC TERMINAL</div>
+</div>
+<nav class="flex-1 space-y-1">
+<div class="px-3 py-2 text-slate-500 font-label-caps uppercase">System</div>
+<a class="flex items-center px-6 py-3 text-slate-500 hover:bg-[#161b22] hover:text-slate-300 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="sensors">sensors</span>
+<span class="font-inter text-sm antialiased">Live Ops</span>
+</a>
+<a class="flex items-center px-6 py-3 text-slate-500 hover:bg-[#161b22] hover:text-slate-300 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="forum">forum</span>
+<span class="font-inter text-sm antialiased">Council Chat</span>
+</a>
+<a class="flex items-center px-6 py-3 bg-[#1c2128] text-[#58a6ff] border-r-4 border-[#58a6ff] shadow-[inset_0_0_10px_rgba(88,166,255,0.1)] transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="hub">hub</span>
+<span class="font-inter text-sm antialiased">Slack Workspace</span>
+</a>
+<a class="flex items-center px-6 py-3 text-slate-500 hover:bg-[#161b22] hover:text-slate-300 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="notification_important">notification_important</span>
+<span class="font-inter text-sm antialiased">ServiceNow &amp; PagerDuty</span>
+</a>
+<a class="flex items-center px-6 py-3 text-slate-500 hover:bg-[#161b22] hover:text-slate-300 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="history">history</span>
+<span class="font-inter text-sm antialiased">Timeline</span>
+</a>
+<a class="flex items-center px-6 py-3 text-slate-500 hover:bg-[#161b22] hover:text-slate-300 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="analytics">analytics</span>
+<span class="font-inter text-sm antialiased">Model Improvements</span>
+</a>
+</nav>
+</aside>
+<div class="flex flex-col flex-1 min-w-0">
+<!-- TopAppBar (Shared Component) -->
+<header class="bg-[#161b22] border-b border-[#30363d] flex justify-between items-center w-full px-6 h-16 shrink-0">
+<div class="flex items-center space-x-4">
+<div class="text-xl font-black tracking-widest text-[#58a6ff] uppercase font-inter">Citadel Command Center</div>
+<div class="bg-[#0d1117] border border-[#30363d] flex items-center px-3 py-1 rounded">
+<span class="material-symbols-outlined text-slate-500 text-sm mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none text-on-surface text-sm focus:ring-0 p-0 w-64" placeholder="Search Workspace..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-6">
+<span class="material-symbols-outlined text-[#58a6ff] cursor-pointer hover:text-blue-300 transition-colors" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-[#58a6ff] cursor-pointer hover:text-blue-300 transition-colors" data-icon="security">security</span>
+<span class="material-symbols-outlined text-[#58a6ff] cursor-pointer hover:text-blue-300 transition-colors" data-icon="account_circle">account_circle</span>
+</div>
+</header>
+<!-- Main Workspace Area -->
+<main class="flex flex-1 overflow-hidden">
+<!-- Slack Sidebar (Nested) -->
+<nav class="w-64 bg-[#1c2026] border-r border-[#30363d] flex flex-col shrink-0">
+<div class="p-4 border-b border-[#30363d] flex justify-between items-center bg-[#1c2026]">
+<div>
+<h2 class="font-h2 text-sm">AcmeCorp Security</h2>
+<div class="flex items-center space-x-1">
+<div class="w-2 h-2 rounded-full bg-error animate-pulse shadow-[0_0_8px_#f85149]"></div>
+<span class="text-error font-label-caps text-[9px]">Incident Active</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400" data-icon="edit_square">edit_square</span>
+</div>
+<div class="flex-1 overflow-y-auto p-2 space-y-4">
+<!-- Channels Section -->
+<div>
+<div class="flex items-center justify-between px-2 mb-1">
+<span class="font-label-caps text-slate-500 uppercase">Channels</span>
+<span class="material-symbols-outlined text-slate-500 text-sm" data-icon="add">add</span>
+</div>
+<div class="space-y-[2px]">
+<a class="flex items-center justify-between px-2 py-1 bg-primary-container/10 text-primary border-l-2 border-primary" href="#">
+<span class="flex items-center"><span class="mr-2 text-xs">#</span> incident-war-room</span>
+<span class="bg-error text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">HOT</span>
+</a>
+<a class="flex items-center px-2 py-1 text-slate-400 hover:bg-surface-variant/50 transition-colors" href="#">
+<span class="mr-2 text-xs">#</span> sec-ops
+                                </a>
+<a class="flex items-center px-2 py-1 text-slate-400 hover:bg-surface-variant/50 transition-colors" href="#">
+<span class="mr-2 text-xs">#</span> sec-leadership
+                                </a>
+<a class="flex items-center justify-between px-2 py-1 text-slate-200 font-semibold hover:bg-surface-variant transition-colors" href="#">
+<span class="flex items-center"><span class="mr-2 text-xs text-slate-400">#</span> investor-relations</span>
+<span class="material-symbols-outlined text-xs text-tertiary" data-icon="lock">lock</span>
+</a>
+</div>
+</div>
+<!-- Direct Messages Section -->
+<div>
+<div class="flex items-center justify-between px-2 mb-1">
+<span class="font-label-caps text-slate-500 uppercase">Direct Messages</span>
+<span class="material-symbols-outlined text-slate-500 text-sm" data-icon="add">add</span>
+</div>
+<div class="space-y-[2px]">
+<div class="flex items-center px-2 py-1 text-slate-400 hover:bg-surface-variant/50 cursor-pointer">
+<div class="w-2 h-2 rounded-full bg-tertiary mr-3"></div>
+<span>Vigilant AI <span class="text-[10px] text-slate-500 ml-1">BOT</span></span>
+</div>
+<div class="flex items-center px-2 py-1 text-slate-400 hover:bg-surface-variant/50 cursor-pointer">
+<div class="w-2 h-2 rounded-full bg-tertiary mr-3"></div>
+<span>James Sterling <span class="text-[10px] text-slate-500 ml-1">CEO</span></span>
+</div>
+<div class="flex items-center px-2 py-1 text-slate-400 hover:bg-surface-variant/50 cursor-pointer">
+<div class="w-2 h-2 rounded-full border border-slate-500 mr-3"></div>
+<span>Elena Vance <span class="text-[10px] text-slate-500 ml-1">Investor</span></span>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<!-- Chat Canvas -->
+<div class="flex-1 flex flex-col bg-surface min-w-0">
+<!-- Internal Team Feed (Collapsible Top Panel) -->
+<div class="bg-[#000000] border-b border-[#30363d] overflow-hidden">
+<div class="px-4 py-2 flex items-center justify-between bg-surface-container-high cursor-pointer">
+<div class="flex items-center text-tertiary font-label-caps text-[10px]">
+<span class="material-symbols-outlined text-sm mr-2" data-icon="terminal">terminal</span>
+                                LLM RAW LOGS FEED (INTERNAL TEAM ONLY)
+                            </div>
+<span class="material-symbols-outlined text-slate-500 text-sm" data-icon="expand_less">expand_less</span>
+</div>
+<div class="p-3 font-data-sm text-tertiary/80 space-y-1 h-32 overflow-y-auto">
+<div><span class="text-slate-500">[14:02:11]</span> SYSTEM: Analyzing investor sentiment in #investor-relations...</div>
+<div><span class="text-slate-500">[14:02:15]</span> LLM: High anxiety detected in token stream from Investor Vance. Triggering reassuring prompt...</div>
+<div><span class="text-slate-500">[14:03:01]</span> SYSTEM: Querying SecOps database for incident ID: #INC-8821...</div>
+<div><span class="text-slate-500">[14:03:05]</span> TRACE: Routing response through Citadel firewall. Latency: 12ms.</div>
+</div>
+</div>
+<!-- Chat Header -->
+<header class="h-16 border-b border-[#30363d] px-6 flex items-center justify-between bg-surface/50 backdrop-blur-md">
+<div class="flex items-center space-x-4">
+<h3 class="font-h1 text-lg flex items-center">
+<span class="text-slate-500 mr-1">#</span> investor-relations
+                            </h3>
+<div class="h-8 w-px bg-[#30363d]"></div>
+<div class="flex flex-col">
+<span class="font-label-caps text-[9px] text-slate-500">ANXIETY TREND</span>
+<div class="flex items-end space-x-0.5 h-6">
+<div class="w-1.5 h-2 bg-tertiary-container/30"></div>
+<div class="w-1.5 h-3 bg-tertiary-container/40"></div>
+<div class="w-1.5 h-4 bg-tertiary-container/60"></div>
+<div class="w-1.5 h-6 bg-error shadow-[0_0_4px_#f85149]"></div>
+<div class="w-1.5 h-5 bg-error/80"></div>
+<div class="w-1.5 h-4 bg-error/60"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center space-x-3">
+<div class="flex -space-x-2">
+<img alt="Avatar" class="w-7 h-7 rounded-full border-2 border-background" data-alt="close up headshot of a middle aged man with graying hair in a professional suit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTmLjHFh-7bVR-0R1-9DXJNR6ADvfng8r23kNJ0crz_8PFHHD1vD6jbJQ8H_KnQIKGMFezJBKitOTwH6Pkz67w9ICH6LC9OJzh3sxpGepOovrnXex-e8Bdj7lwJrEaMu8J6WPXF6DWwNsvOK7jfVeKstvvfl0yZNZ5XEHtalHSvDs8I0dvynh3nK0uSRGaowSoSrFvYxml_fUppg7Tzavuik5XTeq5wDIwU078jWZVgLdiWXvJoSbs6QgM5Dis66o1i6erfQp3T2k"/>
+<img alt="Avatar" class="w-7 h-7 rounded-full border-2 border-background" data-alt="portrait of a focused woman in business attire looking concerned" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHwhyDGGNMMqsGB_M4l607XIIUPxFiGqcmlNLVdT6Stb9ziYfxDDftPj9dNF6odF4oLuUutx_3qs0i4KUAggvbkq6nO3ukB3-vOtQYGbYm2K2yufA6nb9bFhFszq-O0VBXWn8nveu2bA4sY7hC_JC1WtAwlXYQ1LzVDUY_6ysMRgt2QOPvc11KEnCZayEyRCFR_uxg5oslXHINkkByj8T0JirEecUlcrQqUn9QWeb1hOWsm9JaMTRxmikLPHKb5uXrLwzuTMMmVLU"/>
+<div class="w-7 h-7 rounded-full border-2 border-background bg-surface-container-high flex items-center justify-center text-[10px] font-bold">+12</div>
+</div>
+<span class="material-symbols-outlined text-slate-400" data-icon="info">info</span>
+</div>
+</header>
+<!-- Messages Content -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<!-- Investor Message -->
+<div class="flex space-x-4 group">
+<img class="w-10 h-10 rounded lg shrink-0 bg-surface-variant" data-alt="profile icon of a woman with dark hair and a neutral expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4u7XXkmaYSsYiqmpSmRmuFIlDpNv3gz29j7kTNXHU3-AFQ8h3IIaTJL9mNVXAJjMo_PeBsjIq7sKzFc40SmR_tJrIpIV4AWdFsCEuiK223kujJhOwpoaxsYRn8M4CCxmLc9KcACm9HjFmb7SBdEedGoayYfghSejELsZ5Mf4SzBqsWNd5d_O32nnY8q1op04TpobEegvxHzGBRtLbMUVMmI6Tcx1BPhMxE7GhXj09fLhdRWbQFqVyhEf3FiLj9EiKwLNEYIUObY8"/>
+<div class="space-y-1">
+<div class="flex items-center space-x-2">
+<span class="font-bold text-on-surface">Elena Vance</span>
+<span class="bg-secondary-container text-on-secondary-container text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Investor</span>
+<span class="text-slate-500 font-data-sm text-[10px]">14:01</span>
+<div class="flex items-center px-2 py-0.5 rounded-full border border-error bg-error/10">
+<span class="material-symbols-outlined text-[12px] text-error mr-1" data-icon="warning">warning</span>
+<span class="text-error font-label-caps text-[9px] font-black">ALARMED</span>
+</div>
+</div>
+<div class="text-on-surface-variant font-body-md leading-relaxed">
+                                    I am seeing reports of an intrusion in the main vault. What is the current status of our asset security? We need a clear timeline immediately.
+                                </div>
+</div>
+</div>
+<!-- CEO Message -->
+<div class="flex space-x-4 group">
+<img class="w-10 h-10 rounded lg shrink-0 bg-surface-variant" data-alt="professional avatar of a man with short hair and glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdYzP1HtQtfQLnqt1qs8ih0E14O_S1zrOnhbNcsgssQHedpf6CSmTHRirQAil68dZoJBLz1lyP4XAMcImnxZoaPUrUW3nfY-pUqKQSP2CvvkDFXryy3TQrg71O4goxoquOjFcjtinMd_hcyu6iyGGy-gVL63Ju0lVb1vLkzGRrd2YeLvieWJt-vQPCBdFVi8xz1D952tAgH824HwUuOAcT-qB1oaI7r3FSyqecsLekFI5Veijfm4pKVsse5dsyaro5g5PGRv-C624"/>
+<div class="space-y-1">
+<div class="flex items-center space-x-2">
+<span class="font-bold text-on-surface">James Sterling</span>
+<span class="bg-primary-container text-on-primary-container text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">CEO</span>
+<span class="text-slate-500 font-data-sm text-[10px]">14:02</span>
+</div>
+<div class="text-on-surface-variant font-body-md leading-relaxed">
+                                    Elena, please stay calm. Our SOC teams are already on it. <span class="text-primary font-bold">@Vigilant AI</span>, can you provide a summary of the countermeasures deployed?
+                                </div>
+</div>
+</div>
+<!-- Bot Message (Slack Attachment Style) -->
+<div class="flex space-x-4 group">
+<div class="w-10 h-10 rounded lg bg-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary" data-icon="smart_toy" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="space-y-1 flex-1">
+<div class="flex items-center space-x-2">
+<span class="font-bold text-on-surface">Vigilant AI</span>
+<span class="bg-surface-variant text-on-surface-variant text-[10px] px-1 py-0.5 rounded font-bold uppercase tracking-wider">Bot</span>
+<span class="text-slate-500 font-data-sm text-[10px]">14:02</span>
+</div>
+<div class="border-l-4 border-primary bg-surface-container-low p-3 rounded-r space-y-2">
+<p class="font-bold text-sm">Incident Analysis: Vault Intrusion #INC-8821</p>
+<p class="text-sm text-on-surface-variant">The perimeter breach was detected at 13:58. Layer 2 encryption remains intact. 85% of assets have been moved to cold storage as a precaution.</p>
+<div class="flex space-x-3 pt-2">
+<button class="px-3 py-1.5 bg-primary text-on-primary text-xs font-bold rounded hover:opacity-90 transition-opacity">View Real-time Map</button>
+<button class="px-3 py-1.5 border border-outline text-on-surface text-xs font-bold rounded hover:bg-surface-variant transition-colors">Download Report</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Another Investor Message -->
+<div class="flex space-x-4 group">
+<img class="w-10 h-10 rounded lg shrink-0 bg-surface-variant" data-alt="avatar of a younger man with trendy hair and a neutral business look" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-rTDhpqYeySmbJGvHa1f2I_3_q96MeWuBuEldUksiL-rDdf9DA-SaU5EwsvVblrPzwJPGkFKYrOCSV8SyssHlPWrKceM_mharnoMn5in4IM-QIaEPm8FAemlaggBkEDswgsCQxukYVRkYGdznFs4n-kXcFmRJ7e4gjhNITmKrff_xh7qDlazPs3vUguH8ECIkR__2eFIggJnRonElLTP8ydHvQjKoenmfZ9LUyQSy_uveZoIt_OUvMuA6JNAshjGHmLCsPkeVmAE"/>
+<div class="space-y-1">
+<div class="flex items-center space-x-2">
+<span class="font-bold text-on-surface">Marcus Thorne</span>
+<span class="bg-secondary-container text-on-secondary-container text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Investor</span>
+<span class="text-slate-500 font-data-sm text-[10px]">14:04</span>
+<div class="flex items-center px-2 py-0.5 rounded-full border border-tertiary bg-tertiary/10">
+<span class="material-symbols-outlined text-[12px] text-tertiary mr-1" data-icon="sentiment_satisfied">sentiment_satisfied</span>
+<span class="text-tertiary font-label-caps text-[9px] font-black">CONCERNED</span>
+</div>
+</div>
+<div class="text-on-surface-variant font-body-md leading-relaxed">
+                                    The bot's response is somewhat reassuring, but we need a hard ETA on the resolution.
+                                </div>
+</div>
+</div>
+</div>
+<!-- Message Input -->
+<footer class="p-6">
+<div class="bg-[#1c2026] border border-[#30363d] rounded-xl overflow-hidden focus-within:border-primary transition-colors">
+<div class="flex items-center px-4 py-2 border-b border-[#30363d] bg-surface-container-low space-x-4">
+<span class="material-symbols-outlined text-slate-500 text-lg" data-icon="format_bold">format_bold</span>
+<span class="material-symbols-outlined text-slate-500 text-lg" data-icon="format_italic">format_italic</span>
+<span class="material-symbols-outlined text-slate-500 text-lg" data-icon="strikethrough_s">strikethrough_s</span>
+<span class="material-symbols-outlined text-slate-500 text-lg border-l border-[#30363d] pl-4" data-icon="link">link</span>
+<span class="material-symbols-outlined text-slate-500 text-lg" data-icon="format_list_bulleted">format_list_bulleted</span>
+</div>
+<div class="p-4 flex items-end">
+<textarea class="w-full bg-transparent border-none text-on-surface focus:ring-0 resize-none h-10 p-0 placeholder-slate-500" placeholder="Message #investor-relations"></textarea>
+<div class="flex items-center space-x-2 pl-4">
+<span class="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-300" data-icon="alternate_email">alternate_email</span>
+<span class="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-300" data-icon="sentiment_satisfied">sentiment_satisfied</span>
+<span class="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-300" data-icon="attach_file">attach_file</span>
+<button class="bg-[#30363d] p-1.5 rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400" data-icon="send">send</span>
+</button>
+</div>
+</div>
+</div>
+</footer>
+</div>
+</main>
+</div>
+</div>
+</body></html>

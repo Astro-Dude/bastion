@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#004882",
+                        "inverse-primary": "#0060aa",
+                        "secondary": "#d8baff",
+                        "on-primary-container": "#003a6b",
+                        "tertiary-container": "#10bc3f",
+                        "surface-container-lowest": "#0a0e14",
+                        "tertiary": "#4be260",
+                        "surface-dim": "#10141a",
+                        "on-primary-fixed": "#001c38",
+                        "inverse-on-surface": "#2d3137",
+                        "secondary-fixed-dim": "#d8baff",
+                        "on-secondary-fixed-variant": "#5b2b9a",
+                        "on-tertiary-fixed": "#002205",
+                        "on-tertiary": "#00390c",
+                        "on-secondary": "#430882",
+                        "surface-container-low": "#181c22",
+                        "surface": "#10141a",
+                        "primary-fixed": "#d3e4ff",
+                        "surface-variant": "#31353c",
+                        "error-container": "#93000a",
+                        "secondary-fixed": "#eddcff",
+                        "on-background": "#dfe2eb",
+                        "surface-container-highest": "#31353c",
+                        "surface-container": "#1c2026",
+                        "on-tertiary-fixed-variant": "#005316",
+                        "on-surface": "#dfe2eb",
+                        "primary": "#a2c9ff",
+                        "on-error-container": "#ffdad6",
+                        "primary-container": "#58a6ff",
+                        "on-secondary-container": "#cda8ff",
+                        "on-surface-variant": "#c0c7d4",
+                        "on-secondary-fixed": "#290055",
+                        "tertiary-fixed": "#6fff7b",
+                        "on-tertiary-container": "#004310",
+                        "surface-bright": "#353940",
+                        "on-primary": "#00315c",
+                        "tertiary-fixed-dim": "#4be260",
+                        "primary-fixed-dim": "#a2c9ff",
+                        "outline-variant": "#414752",
+                        "error": "#ffb4ab",
+                        "background": "#10141a",
+                        "outline": "#8b919d",
+                        "on-error": "#690005",
+                        "inverse-surface": "#dfe2eb",
+                        "surface-tint": "#a2c9ff",
+                        "secondary-container": "#5d2d9c",
+                        "surface-container-high": "#262a31"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "xs": "4px",
+                        "unit": "4px",
+                        "margin": "24px",
+                        "gutter": "16px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Inter"],
+                        "data-lg": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "h1": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-sm": ["JetBrains Mono"],
+                        "data-md": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "h2": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "data-lg": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                        "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "h1": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "data-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "data-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #58a6ff;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<div class="flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="flex flex-col h-full pt-4 space-y-2 bg-[#0d1117] dark:bg-[#0d1117] h-screen w-64 border-r border-r border-[#30363d] shrink-0">
+<div class="px-6 mb-8">
+<div class="font-bold text-[#58a6ff] text-xl tracking-widest uppercase">CITADEL</div>
+<div class="text-[10px] text-slate-500 tracking-[0.2em] font-label-caps">SOC TERMINAL</div>
+</div>
+<nav class="flex-1 space-y-1 px-3">
+<a class="flex items-center px-3 py-2 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="sensors">sensors</span>
+<span class="font-inter text-sm antialiased">Live Ops</span>
+</a>
+<a class="flex items-center px-3 py-2 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="forum">forum</span>
+<span class="font-inter text-sm antialiased">Council Chat</span>
+</a>
+<a class="flex items-center px-3 py-2 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="hub">hub</span>
+<span class="font-inter text-sm antialiased">Slack Workspace</span>
+</a>
+<a class="flex items-center px-3 py-2 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="notification_important">notification_important</span>
+<span class="font-inter text-sm antialiased">ServiceNow &amp; PagerDuty</span>
+</a>
+<a class="flex items-center px-3 py-2 bg-[#1c2128] text-[#58a6ff] border-r-4 border-[#58a6ff] shadow-[inset_0_0_10px_rgba(88,166,255,0.1)] transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="history">history</span>
+<span class="font-inter text-sm antialiased">Timeline</span>
+</a>
+<a class="flex items-center px-3 py-2 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="analytics">analytics</span>
+<span class="font-inter text-sm antialiased">Model Improvements</span>
+</a>
+</nav>
+<div class="p-4 mt-auto border-t border-[#30363d]">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-[#3fb950] animate-pulse"></div>
+<span class="font-data-sm text-slate-400">CORE STATUS: STABLE</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-6 h-16 bg-[#161b22] dark:bg-[#161b22] docked full-width top-0 border-b border-b border-[#30363d]">
+<div class="flex items-center gap-8">
+<div class="text-xl font-black tracking-widest text-[#58a6ff] uppercase">Citadel Command Center</div>
+<div class="flex items-center bg-[#0d1117] border border-[#30363d] px-3 py-1.5 rounded-lg w-96">
+<span class="material-symbols-outlined text-slate-500 text-sm mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-slate-300 w-full font-inter" placeholder="Search timeline events..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-400 hover:text-blue-300 transition-colors duration-200 active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-slate-400 hover:text-blue-300 transition-colors duration-200 active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+</button>
+<button class="text-slate-400 hover:text-blue-300 transition-colors duration-200 active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="flex-1 overflow-y-auto bg-[#0d1117] p-margin space-y-gutter">
+<!-- Summary Bar -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<div class="bg-surface-container border border-outline-variant p-md rounded-lg flex flex-col">
+<span class="font-label-caps text-slate-500 mb-1">TOTAL DURATION</span>
+<span class="font-data-lg text-primary text-h1">04:12:33</span>
+</div>
+<div class="bg-surface-container border border-outline-variant p-md rounded-lg flex flex-col relative overflow-hidden">
+<span class="font-label-caps text-slate-500 mb-1">PEAK THREAT LEVEL</span>
+<span class="font-data-lg text-error text-h1">CRITICAL (L9)</span>
+<div class="absolute right-0 top-0 h-full w-1 bg-error"></div>
+</div>
+<div class="bg-surface-container border border-outline-variant p-md rounded-lg flex flex-col relative overflow-hidden">
+<span class="font-label-caps text-slate-500 mb-1">FINAL SECURITY SCORE</span>
+<span class="font-data-lg text-tertiary text-h1">94.2%</span>
+<div class="absolute right-0 top-0 h-full w-1 bg-tertiary"></div>
+</div>
+<div class="bg-surface-container border border-outline-variant p-md rounded-lg flex flex-col justify-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="filter_alt">filter_alt</span>
+<span class="font-body-md text-on-surface">Filter: ALL STREAMS</span>
+</div>
+</div>
+</div>
+<!-- Timeline Visualization Container -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg overflow-hidden flex flex-col h-[500px]">
+<div class="p-sm bg-[#161b22] border-b border-outline-variant flex justify-between items-center">
+<span class="font-label-caps text-on-surface-variant px-2">INCIDENT TIMELINE - EPS-0492-X</span>
+<div class="flex gap-2">
+<button class="bg-[#30363d] px-2 py-1 rounded text-[10px] font-bold">1X</button>
+<button class="bg-[#30363d] px-2 py-1 rounded text-[10px] font-bold">PAUSE</button>
+</div>
+</div>
+<div class="flex-1 flex min-w-0">
+<!-- Stream Labels -->
+<div class="w-48 border-r border-outline-variant bg-surface-dim z-10 flex flex-col">
+<div class="h-12 border-b border-outline-variant flex items-center px-4 font-label-caps text-slate-500">CATEGORY</div>
+<div class="flex-1 flex flex-col">
+<div class="h-12 border-b border-outline-variant/30 flex items-center px-4 text-xs font-medium text-error flex gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> SIEM Alerts
+                                </div>
+<div class="h-12 border-b border-outline-variant/30 flex items-center px-4 text-xs font-medium text-primary flex gap-2">
+<span class="w-2 h-2 bg-primary"></span> Cmdr Actions
+                                </div>
+<div class="h-12 border-b border-outline-variant/30 flex items-center px-4 text-xs font-medium text-secondary flex gap-2">
+<span class="w-2 h-2 rounded-full border-2 border-secondary"></span> Decisions
+                                </div>
+<div class="h-12 border-b border-outline-variant/30 flex items-center px-4 text-xs font-medium text-tertiary flex gap-2">
+<span class="material-symbols-outlined text-[14px]" data-icon="diamond">diamond</span> Governance
+                                </div>
+<div class="h-12 border-b border-outline-variant/30 flex items-center px-4 text-xs font-medium text-yellow-400 flex gap-2">
+<span class="material-symbols-outlined text-[14px]" data-icon="star">star</span> Investor
+                                </div>
+<div class="h-12 border-b border-outline-variant/30 flex items-center px-4 text-xs font-medium text-orange-400 flex gap-2">
+<span class="material-symbols-outlined text-[14px]" data-icon="change_history">change_history</span> Stakeholder
+                                </div>
+<div class="h-12 flex items-center px-4 text-xs font-medium text-slate-300 flex gap-2">
+<span class="material-symbols-outlined text-[14px]" data-icon="show_chart">show_chart</span> Integrity
+                                </div>
+</div>
+</div>
+<!-- Scrollable Timeline -->
+<div class="flex-1 overflow-x-auto overflow-y-hidden relative bg-[#000000]">
+<!-- Scrubber Line -->
+<div class="absolute top-0 bottom-0 left-[60%] w-[1px] bg-primary z-20 shadow-[0_0_10px_rgba(88,166,255,0.5)]">
+<div class="absolute -top-1 -left-1.5 w-3 h-3 bg-primary rotate-45"></div>
+</div>
+<!-- Time markers -->
+<div class="h-12 border-b border-outline-variant w-[2000px] flex items-end">
+<div class="flex w-full">
+<div class="w-24 border-l border-outline-variant/20 h-4 flex flex-col justify-between pl-1">
+<span class="font-data-sm text-[9px] text-slate-600">00:00</span>
+</div>
+<div class="w-24 border-l border-outline-variant/20 h-4 flex flex-col justify-between pl-1">
+<span class="font-data-sm text-[9px] text-slate-600">00:15</span>
+</div>
+<!-- Repeat for visual density -->
+<div class="w-24 border-l border-outline-variant/20 h-4 flex flex-col justify-between pl-1"><span class="font-data-sm text-[9px] text-slate-600">00:30</span></div>
+<div class="w-24 border-l border-outline-variant/20 h-4 flex flex-col justify-between pl-1"><span class="font-data-sm text-[9px] text-slate-600">00:45</span></div>
+<div class="w-24 border-l border-outline-variant/20 h-4 flex flex-col justify-between pl-1"><span class="font-data-sm text-[9px] text-slate-600">01:00</span></div>
+<div class="w-24 border-l border-outline-variant/20 h-4 flex flex-col justify-between pl-1"><span class="font-data-sm text-[9px] text-slate-600">01:15</span></div>
+<div class="w-24 border-l border-outline-variant/20 h-4 flex flex-col justify-between pl-1"><span class="font-data-sm text-[9px] text-slate-600">01:30</span></div>
+<div class="w-24 border-l border-outline-variant/20 h-4 flex flex-col justify-between pl-1"><span class="font-data-sm text-[9px] text-slate-600">01:45</span></div>
+<div class="w-24 border-l border-outline-variant/20 h-4 flex flex-col justify-between pl-1"><span class="font-data-sm text-[9px] text-slate-600">02:00</span></div>
+<div class="w-24 border-l border-outline-variant/20 h-4 flex flex-col justify-between pl-1"><span class="font-data-sm text-[9px] text-slate-600">02:15</span></div>
+</div>
+</div>
+<!-- Data Lanes -->
+<div class="w-[2000px] flex flex-col h-full">
+<!-- SIEM Alerts -->
+<div class="h-12 border-b border-outline-variant/10 flex items-center relative">
+<div class="absolute left-10 w-2 h-2 rounded-full bg-error ring-4 ring-error/20"></div>
+<div class="absolute left-24 w-2 h-2 rounded-full bg-error"></div>
+<div class="absolute left-[300px] w-2 h-2 rounded-full bg-error"></div>
+<div class="absolute left-[310px] w-2 h-2 rounded-full bg-error"></div>
+<div class="absolute left-[600px] w-2 h-2 rounded-full bg-error ring-4 ring-error/20"></div>
+<div class="absolute left-[1200px] w-2 h-2 rounded-full bg-error"></div>
+</div>
+<!-- Cmdr Actions -->
+<div class="h-12 border-b border-outline-variant/10 flex items-center relative">
+<div class="absolute left-40 w-3 h-3 bg-primary border border-primary-fixed"></div>
+<div class="absolute left-[450px] w-3 h-3 bg-primary border border-primary-fixed"></div>
+<div class="absolute left-[650px] w-3 h-3 bg-primary border border-primary-fixed"></div>
+<div class="absolute left-[900px] w-3 h-3 bg-primary border border-primary-fixed"></div>
+</div>
+<!-- Oversight Decisions -->
+<div class="h-12 border-b border-outline-variant/10 flex items-center relative">
+<div class="absolute left-[500px] w-4 h-4 rounded-full border-2 border-secondary bg-secondary-container/20"></div>
+<div class="absolute left-[800px] w-4 h-4 rounded-full border-2 border-secondary bg-secondary-container/20"></div>
+</div>
+<!-- Governance Events -->
+<div class="h-12 border-b border-outline-variant/10 flex items-center relative">
+<span class="material-symbols-outlined absolute left-[150px] text-tertiary text-[16px]" data-icon="diamond">diamond</span>
+<span class="material-symbols-outlined absolute left-[720px] text-tertiary text-[16px]" data-icon="diamond">diamond</span>
+</div>
+<!-- Investor Updates -->
+<div class="h-12 border-b border-outline-variant/10 flex items-center relative">
+<span class="material-symbols-outlined absolute left-[1100px] text-yellow-400 text-[16px]" data-icon="star">star</span>
+</div>
+<!-- Stakeholder Asks -->
+<div class="h-12 border-b border-outline-variant/10 flex items-center relative">
+<span class="material-symbols-outlined absolute left-[550px] text-orange-400 text-[16px]" data-icon="change_history">change_history</span>
+<span class="material-symbols-outlined absolute left-[950px] text-orange-400 text-[16px]" data-icon="change_history">change_history</span>
+</div>
+<!-- System Integrity (Line Chart Mockup) -->
+<div class="h-12 flex items-center relative">
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none">
+<path d="M0,30 Q100,10 200,40 T400,20 T600,35 T800,15 T1000,40 T1200,10 T1400,25 T1600,15 T1800,35 T2000,20" fill="none" opacity="0.4" stroke="#58a6ff" stroke-dasharray="4" stroke-width="1.5"></path>
+<path d="M0,35 Q100,25 200,45 T400,30 T600,40 T800,25 T1000,45 T1200,20 T1400,35 T1600,25 T1800,45 T2000,30" fill="none" stroke="#58a6ff" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Detail Panel -->
+<div class="bg-surface-container border border-outline-variant rounded-lg overflow-hidden">
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-[#161b22]">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="info">info</span>
+<span class="font-h2 text-on-surface">Event Detail: Terminal Sequence 0x4B3</span>
+</div>
+<span class="font-data-sm text-slate-500">TIMESTAMP: 2024-05-22 14:02:11.004</span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-0 h-full">
+<div class="p-md border-r border-outline-variant flex flex-col gap-4">
+<div>
+<label class="font-label-caps text-slate-500 block mb-1">EVENT ACTOR</label>
+<div class="flex items-center gap-2">
+<img alt="Actor Avatar" class="w-8 h-8 rounded bg-surface-container-high" data-alt="minimalist avatar icon of a technician with glasses and a headset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAn8fycdJiDL-NrwxyESqAk_EmYcafGy1WbwvO-ml8aAYW3YuullFgcJOOiYqypJnkp9B7-FbuKaaJnNr2OIOBYAlxr5e0IwthU--8vRJv7wsupGsy1yi5t92m58sNQgWkX1IQ3EQVEU5ribDT8NPTT3plmd-6Bzg3wowMtxfld4wozOYWX3xYyNOx4GMgIftcmOzXS2khyU6cwYHhKuul55UUA0vk7b_DBRK9-lRlm0teu9sfcs2zxyBMZMxyk2PBhs6dnpaa6OQ8"/>
+<span class="font-data-md">Commander_Echo_01</span>
+</div>
+</div>
+<div>
+<label class="font-label-caps text-slate-500 block mb-1">REASONING</label>
+<p class="text-body-md text-on-surface-variant">Detected anomalous outbound traffic from secure vault A-12. Executing isolation protocol 44.B to prevent further exfiltration. No secondary lateral movement observed.</p>
+</div>
+</div>
+<div class="p-md border-r border-outline-variant flex flex-col gap-4">
+<div>
+<label class="font-label-caps text-slate-500 block mb-1">AFFECTED SYSTEMS</label>
+<div class="space-y-1">
+<div class="bg-surface-container-high px-2 py-1 flex justify-between rounded">
+<span class="font-data-sm">DB-VAULT-PRIMARY</span>
+<span class="font-data-sm text-error">ISOLATED</span>
+</div>
+<div class="bg-surface-container-high px-2 py-1 flex justify-between rounded">
+<span class="font-data-sm">GATEWAY-PROXY-01</span>
+<span class="font-data-sm text-tertiary">STABLE</span>
+</div>
+<div class="bg-surface-container-high px-2 py-1 flex justify-between rounded">
+<span class="font-data-sm">LOAD-BAL-ALPHA</span>
+<span class="font-data-sm text-tertiary">STABLE</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-0 flex flex-col">
+<div class="bg-[#000000] p-md flex-1 font-data-sm text-tertiary overflow-auto">
+<div class="flex gap-4 opacity-50"><span class="w-12 shrink-0">14:02:11</span><span>[SYS] INITIALIZING ISOLATION...</span></div>
+<div class="flex gap-4"><span class="w-12 shrink-0">14:02:12</span><span>[NET] ROUTE 10.0.4.1 TERMINATED</span></div>
+<div class="flex gap-4"><span class="w-12 shrink-0">14:02:12</span><span>[NET] ROUTE 10.0.4.5 TERMINATED</span></div>
+<div class="flex gap-4 text-primary"><span class="w-12 shrink-0">14:02:13</span><span>[CMD] BROADCASTING STATUS TO COUNCIL...</span></div>
+<div class="flex gap-4"><span class="w-12 shrink-0">14:02:15</span><span>[SYS] VAULT-A12 STATUS: LOCKED</span></div>
+<div class="flex gap-4 opacity-30"><span class="w-12 shrink-0">14:02:16</span><span>[LOG] SEQUENCE COMPLETE.</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

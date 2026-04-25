@@ -135,7 +135,9 @@ The attack is a **genuine simulation** using a network graph, not random log inj
 
 ### `recorder.py` — Complete Workflow Persistence
 - Saves per-step: commander prompt, commander raw response, commander parsed action, oversight prompt, oversight raw response, oversight parsed action, revision cycle data, env outcomes, rewards, trust after
-- Finalize writes `transcript.json` + `transcript.md` atomically
+- **Extended `record_step()` with 10 new fields**: `team_messages`, `siem_alerts`, `systems_state`, `investor_state`, `investor_messages`, `stakeholder_asks`, `governance_events`, `playbook_snapshot`, `data_exfiltrated`, `stamina`
+- **`_build_dashboard_json()`**: assembles per-step snapshot for the live dashboard
+- `finalize()` writes `transcript.json` + `transcript.md` + **`dashboard.json`** atomically
 - Full transcript: 65-114 KB per task
 
 ### `dynamics.py` — Richer Action Payloads (Option A)
@@ -169,6 +171,9 @@ Oversight system prompt updated to critique **wrong method choices** directly:
 - Captures raw prompts/responses for recorder
 - Runs all tasks, saves transcript, calls `write_run_index`
 - Model-agnostic: reads `API_BASE_URL` / `MODEL_NAME` / `HF_TOKEN`
+- **`_extract_governance_events()`** helper extracts governance event list from env info dict each step
+- **`_make_local_env_with_investor()`** wires investor Qwen client through to environment constructor
+- `council_step()` recorder call passes all 10 new recorder fields per step
 
 **Three Oversight improvements (all implemented):**
 
@@ -184,10 +189,23 @@ The four-section observation structure is reflected in `OVERSIGHT_SYSTEM_PROMPT`
 3. EPISODE HISTORY
 4. POLICY CHECKS
 
-### `dashboard.py` — Self-Contained HTML Dashboard
+### `dashboard.py` / `runs/dashboard.html` — Live SOC Replay Dashboard
 - Scans `runs/` directory, embeds all transcripts as JSON in HTML
-- ~290KB self-contained (Chart.js + Tailwind CDN)
-- 5 tabs: Overview (score cards, sub-score bars), Timeline (step cards with Oversight decision color-glow, expandable raw prompts), Charts (cumulative reward, trust evolution, sub-score radar, decision heatmap), Playbook (lesson cards), Compare (overlay multiple runs with shared axes)
+- Self-contained (~1500 lines); Chart.js + Tailwind load from CDN
+- **6 tabs** matching Stitch SOC design (`#0d1117` background, `#58a6ff` Commander Blue, Inter + JetBrains Mono):
+
+| Tab | Content |
+|---|---|
+| **Live Ops** | SIEM terminal feed · 8-system status grid (color-coded by compromise) · Governance + Stakeholders right panel · incident timeline scrubber at bottom |
+| **Council Chat** | Per-step CMD ↔ OVR cards with connecting center line, verdict color (approve=green, revise=amber, veto=red), playbook lessons sidebar |
+| **Slack** | Full Slack-clone workspace — stakeholder DMs, #soc-alerts, #legal-gdpr, #exec-escalation channels |
+| **Governance** | ServiceNow ticket table · PagerDuty alert feed · CAB approval log |
+| **Incident Timeline** | Swim-lane view (SIEM / Decision / Action), fixed label column, step scrubber |
+| **Model Performance** | Bento hero metrics · sub-score bar chart · reward curve · oversight decision heatmap |
+
+- Step scrubber: ‹/› in header advances/retreats steps; Play/Pause auto-advances
+- **LOAD JSON** button: load any `runs/<id>/dashboard.json` to replay a real run
+- `DEMO_DATA` embedded for instant out-of-the-box demo without a run
 
 ---
 
@@ -203,17 +221,21 @@ Citadel/
 ├── trust.py              # Bidirectional trust dynamics
 ├── playbook.py           # Shared lesson memory with utility decay
 ├── stakeholder_events.py # CEO/CFO/Legal/Board pressure events
-├── environment.py        # Two-agent council loop with feature flags
+├── environment.py        # Two-agent council loop; investor_llm_client param for local Qwen
 ├── reward.py             # Multi-layer scoring (catastrophic, severity, precision)
 ├── tasks.py              # 4 scenarios (easy_1, medium_1, hard_1, hard_2)
 ├── ablation.py           # Feature ablation harness (7 conditions, no LLM needed)
 ├── baseline.py           # Deterministic baselines for evaluation
-├── recorder.py           # Complete per-step workflow persistence
-├── inference.py          # Two-agent episode driver
-├── dashboard.py          # Self-contained HTML dashboard generator
+├── recorder.py           # 20-field per-step persistence; writes dashboard.json per run
+├── inference.py          # Two-agent episode driver; _extract_governance_events()
+├── investor_agent.py     # Investor/board agent (OpenAI-compat; works with Ollama/Qwen)
+├── dashboard.py          # HTML dashboard generator (6 tabs, Stitch SOC design)
 ├── openenv.yaml          # OpenEnv deployment spec
 ├── pyproject.toml        # Package config (citadel v2.0.0)
-└── uv.lock               # Dependency lock for openenv validate
+├── uv.lock               # Dependency lock for openenv validate
+└── runs/
+    ├── dashboard.html    # Combined 6-tab dashboard (self-contained, ~1500 lines)
+    └── <run_id>/         # transcript.json, transcript.md, dashboard.json
 ```
 
 ---
@@ -241,8 +263,20 @@ On catastrophic breach: `governance_compliance`, `efficiency`, `adversary_adapta
 - 4-task smoke test: all tasks load, step runs, scores computed
 - Gen 4 adversary: live Gemma 7B issues directives via Ollama
 - Ablation: 56 episodes in 0.2s, `oversight_approves_always` Δ = -0.133
-- Recorder: full transcript saved to `runs/`
+- Recorder: full transcript + `dashboard.json` saved to `runs/<run_id>/`
 - Feature flags: per-episode override confirmed
+- Investor agent: swapped Claude Haiku → local Qwen via OpenAI-compatible client (Ollama)
+
+### Benchmark: Gemma 7B untrained (`runs/20260419T220811-gemma-7b-untrained`)
+
+| Task | Score | Steps | Termination |
+|---|---|---|---|
+| `easy_1` | 0.6278 | 12 | normal |
+| `medium_1` | 0.2697 | 12 | normal |
+| `hard_1` | 0.2860 | 8 | **total_data_breach** |
+| **avg** | **0.3945** | — | — |
+
+Gen 3 deceptive APT causes catastrophic breach at step 8 on `hard_1` — exactly the failure mode a trained council avoids. Serves as the untrained baseline for judge storytelling.
 
 ---
 

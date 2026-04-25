@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #58a6ff; }
+        
+        /* Custom Grid for the Architecture Diagram */
+        .tree-line {
+            position: relative;
+        }
+        .tree-line::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            width: 20px;
+            height: 1px;
+            background: #30363d;
+        }
+        .tree-line::after {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 0;
+            width: 1px;
+            height: 100%;
+            background: #30363d;
+        }
+        .tree-line:last-child::after {
+            height: 50%;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#004882",
+                        "inverse-primary": "#0060aa",
+                        "secondary": "#d8baff",
+                        "on-primary-container": "#003a6b",
+                        "tertiary-container": "#10bc3f",
+                        "surface-container-lowest": "#0a0e14",
+                        "tertiary": "#4be260",
+                        "surface-dim": "#10141a",
+                        "on-primary-fixed": "#001c38",
+                        "inverse-on-surface": "#2d3137",
+                        "secondary-fixed-dim": "#d8baff",
+                        "on-secondary-fixed-variant": "#5b2b9a",
+                        "on-tertiary-fixed": "#002205",
+                        "on-tertiary": "#00390c",
+                        "on-secondary": "#430882",
+                        "surface-container-low": "#181c22",
+                        "surface": "#10141a",
+                        "primary-fixed": "#d3e4ff",
+                        "surface-variant": "#31353c",
+                        "error-container": "#93000a",
+                        "secondary-fixed": "#eddcff",
+                        "on-background": "#dfe2eb",
+                        "surface-container-highest": "#31353c",
+                        "surface-container": "#1c2026",
+                        "on-tertiary-fixed-variant": "#005316",
+                        "on-surface": "#dfe2eb",
+                        "primary": "#a2c9ff",
+                        "on-error-container": "#ffdad6",
+                        "primary-container": "#58a6ff",
+                        "on-secondary-container": "#cda8ff",
+                        "on-surface-variant": "#c0c7d4",
+                        "on-secondary-fixed": "#290055",
+                        "tertiary-fixed": "#6fff7b",
+                        "on-tertiary-container": "#004310",
+                        "surface-bright": "#353940",
+                        "on-primary": "#00315c",
+                        "tertiary-fixed-dim": "#4be260",
+                        "primary-fixed-dim": "#a2c9ff",
+                        "outline-variant": "#414752",
+                        "error": "#ffb4ab",
+                        "background": "#10141a",
+                        "outline": "#8b919d",
+                        "on-error": "#690005",
+                        "inverse-surface": "#dfe2eb",
+                        "surface-tint": "#a2c9ff",
+                        "secondary-container": "#5d2d9c",
+                        "surface-container-high": "#262a31"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "xs": "4px",
+                        "unit": "4px",
+                        "margin": "24px",
+                        "gutter": "16px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Inter"],
+                        "data-lg": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "h1": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-sm": ["JetBrains Mono"],
+                        "data-md": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "h2": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "data-lg": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                        "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "h1": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "data-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "data-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- SideNavBar -->
+<aside class="bg-[#0d1117] text-[#58a6ff] font-inter text-sm antialiased h-screen w-64 border-r border-[#30363d] flex flex-col h-full pt-4 space-y-2 flat">
+<div class="px-6 mb-8">
+<div class="font-bold text-[#58a6ff] text-lg tracking-wider">CITADEL</div>
+<div class="text-[10px] text-slate-500 tracking-widest uppercase">SOC TERMINAL</div>
+</div>
+<nav class="flex-1 px-2 space-y-1">
+<a class="flex items-center px-4 py-3 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">sensors</span>
+                    Live Ops
+                </a>
+<a class="flex items-center px-4 py-3 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">forum</span>
+                    Council Chat
+                </a>
+<a class="flex items-center px-4 py-3 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">hub</span>
+                    Slack Workspace
+                </a>
+<a class="flex items-center px-4 py-3 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">notification_important</span>
+                    ServiceNow &amp; PagerDuty
+                </a>
+<a class="flex items-center px-4 py-3 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">history</span>
+                    Timeline
+                </a>
+<a class="flex items-center px-4 py-3 bg-[#1c2128] text-[#58a6ff] border-r-4 border-[#58a6ff] shadow-[inset_0_0_10px_rgba(88,166,255,0.1)] transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">analytics</span>
+                    Model Improvements
+                </a>
+</nav>
+<div class="p-4 border-t border-[#30363d]">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_#3fb950]"></div>
+<span class="text-xs font-data-sm text-slate-400">SOC STATUS: NOMINAL</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex flex-col flex-1 overflow-hidden">
+<!-- TopAppBar -->
+<header class="bg-[#161b22] flex justify-between items-center w-full px-6 h-16 border-b border-[#30363d] flat no shadows">
+<div class="flex items-center gap-6">
+<span class="text-xl font-black tracking-widest text-[#58a6ff] uppercase">Citadel Command Center</span>
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="bg-[#0d1117] border border-[#30363d] rounded text-sm py-1.5 pl-10 pr-4 w-64 focus:outline-none focus:border-[#58a6ff]" placeholder="Search audit logs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-400 hover:text-blue-300 transition-colors duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-slate-400 hover:text-blue-300 transition-colors duration-200">
+<span class="material-symbols-outlined">security</span>
+</button>
+<div class="h-8 w-8 rounded bg-[#30363d] flex items-center justify-center text-slate-300">
+<span class="material-symbols-outlined">account_circle</span>
+</div>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<main class="flex-1 overflow-y-auto p-gutter space-y-gutter">
+<!-- Hero Metrics Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Final Score Card -->
+<div class="bg-[#161b22] border border-[#30363d] p-md relative overflow-hidden group">
+<div class="absolute left-0 top-0 w-1 h-full bg-[#58a6ff]"></div>
+<div class="text-label-caps font-label-caps text-slate-500 mb-2">FINAL SCORE</div>
+<div class="flex items-baseline gap-2">
+<span class="text-h1 font-data-lg text-[#58a6ff]">0.71</span>
+<span class="text-xs font-data-sm text-slate-500">vs 0.45</span>
+</div>
+<div class="mt-4 flex items-center text-tertiary gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-xs font-bold">+57.7% improvement</span>
+</div>
+</div>
+<!-- Governance Card -->
+<div class="bg-[#161b22] border border-[#30363d] p-md relative overflow-hidden">
+<div class="absolute left-0 top-0 w-1 h-full bg-[#58a6ff]"></div>
+<div class="text-label-caps font-label-caps text-slate-500 mb-2">GOVERNANCE COMPLIANCE</div>
+<div class="flex items-baseline gap-2">
+<span class="text-h1 font-data-lg text-[#58a6ff]">0.65</span>
+<span class="text-xs font-data-sm text-slate-500">vs 0.10</span>
+</div>
+<div class="mt-4 flex items-center text-tertiary gap-1">
+<span class="material-symbols-outlined text-sm">shield</span>
+<span class="text-xs font-bold">Policy adherence peak</span>
+</div>
+</div>
+<!-- Data Exfiltrated Card -->
+<div class="bg-[#161b22] border border-[#30363d] p-md relative overflow-hidden">
+<div class="absolute left-0 top-0 w-1 h-full bg-error"></div>
+<div class="text-label-caps font-label-caps text-slate-500 mb-2">DATA EXFILTRATED</div>
+<div class="flex items-baseline gap-2">
+<span class="text-h1 font-data-lg text-error">8%</span>
+<span class="text-xs font-data-sm text-slate-500">vs 55%</span>
+</div>
+<div class="mt-4 flex items-center text-tertiary gap-1">
+<span class="material-symbols-outlined text-sm">lock_open</span>
+<span class="text-xs font-bold">-47.0% risk reduction</span>
+</div>
+</div>
+<!-- Investor Satisfaction Card -->
+<div class="bg-[#161b22] border border-[#30363d] p-md relative overflow-hidden">
+<div class="absolute left-0 top-0 w-1 h-full bg-[#58a6ff]"></div>
+<div class="text-label-caps font-label-caps text-slate-500 mb-2">INVESTOR SATISFACTION</div>
+<div class="flex items-baseline gap-2">
+<span class="text-h1 font-data-lg text-[#58a6ff]">EXCELLENT</span>
+</div>
+<div class="mt-4 flex items-center text-slate-400 gap-1">
+<span class="material-symbols-outlined text-sm">groups</span>
+<span class="text-xs font-bold">Audit ready status</span>
+</div>
+</div>
+</div>
+<!-- Main Analytics Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Performance Chart -->
+<div class="lg:col-span-2 bg-[#161b22] border border-[#30363d] p-md">
+<div class="flex justify-between items-center mb-6">
+<div class="text-label-caps font-label-caps text-slate-300">BENCHMARK PERFORMANCE COMPARISON</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 bg-primary"></div>
+<span class="text-[10px] text-slate-400 uppercase font-bold">Baseline</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 bg-tertiary"></div>
+<span class="text-[10px] text-slate-400 uppercase font-bold">GRPO Trained</span>
+</div>
+</div>
+</div>
+<div class="h-64 flex items-end justify-between px-4 pb-4 border-b border-[#30363d] gap-4">
+<!-- Group 1: Latency -->
+<div class="flex-1 flex flex-col items-center gap-1 group">
+<div class="w-full flex items-end justify-center gap-1 h-48">
+<div class="w-4 bg-primary/40 h-[60%] border-t-2 border-primary"></div>
+<div class="w-4 bg-tertiary h-[40%] border-t-2 border-tertiary-fixed shadow-[0_0_10px_#3fb95044]"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-data-sm mt-2">LATENCY</span>
+</div>
+<!-- Group 2: Reasoning -->
+<div class="flex-1 flex flex-col items-center gap-1 group">
+<div class="w-full flex items-end justify-center gap-1 h-48">
+<div class="w-4 bg-primary/40 h-[30%] border-t-2 border-primary"></div>
+<div class="w-4 bg-tertiary h-[85%] border-t-2 border-tertiary-fixed shadow-[0_0_10px_#3fb95044]"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-data-sm mt-2">REASONING</span>
+</div>
+<!-- Group 3: Compliance -->
+<div class="flex-1 flex flex-col items-center gap-1 group">
+<div class="w-full flex items-end justify-center gap-1 h-48">
+<div class="w-4 bg-primary/40 h-[15%] border-t-2 border-primary"></div>
+<div class="w-4 bg-tertiary h-[75%] border-t-2 border-tertiary-fixed shadow-[0_0_10px_#3fb95044]"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-data-sm mt-2">COMPLIANCE</span>
+</div>
+<!-- Group 4: Stealth -->
+<div class="flex-1 flex flex-col items-center gap-1 group">
+<div class="w-full flex items-end justify-center gap-1 h-48">
+<div class="w-4 bg-primary/40 h-[45%] border-t-2 border-primary"></div>
+<div class="w-4 bg-tertiary h-[90%] border-t-2 border-tertiary-fixed shadow-[0_0_10px_#3fb95044]"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-data-sm mt-2">STEALTH</span>
+</div>
+<!-- Group 5: Context -->
+<div class="flex-1 flex flex-col items-center gap-1 group">
+<div class="w-full flex items-end justify-center gap-1 h-48">
+<div class="w-4 bg-primary/40 h-[55%] border-t-2 border-primary"></div>
+<div class="w-4 bg-tertiary h-[65%] border-t-2 border-tertiary-fixed shadow-[0_0_10px_#3fb95044]"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-data-sm mt-2">CONTEXT</span>
+</div>
+<!-- Group 6: Safety -->
+<div class="flex-1 flex flex-col items-center gap-1 group">
+<div class="w-full flex items-end justify-center gap-1 h-48">
+<div class="w-4 bg-primary/40 h-[40%] border-t-2 border-primary"></div>
+<div class="w-4 bg-tertiary h-[95%] border-t-2 border-tertiary-fixed shadow-[0_0_10px_#3fb95044]"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-data-sm mt-2">SAFETY</span>
+</div>
+</div>
+</div>
+<!-- Architecture Diagram -->
+<div class="bg-[#161b22] border border-[#30363d] p-md">
+<div class="text-label-caps font-label-caps text-slate-300 mb-6">MODEL ARCHITECTURE TREE</div>
+<div class="space-y-4">
+<!-- Root -->
+<div class="flex items-center gap-3 p-3 bg-[#0d1117] border border-[#30363d] rounded">
+<span class="material-symbols-outlined text-[#58a6ff]">memory</span>
+<div>
+<div class="text-xs font-bold text-[#58a6ff]">Qwen2.5-3B-Base</div>
+<div class="text-[9px] text-slate-500 font-data-sm uppercase">Foundational Weights</div>
+</div>
+</div>
+<!-- Children -->
+<div class="ml-8 space-y-4">
+<div class="tree-line flex items-center justify-between p-2 bg-[#1c2126] border border-[#30363d] rounded">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary text-sm">settings_input_component</span>
+<div class="text-[11px] font-medium">commander_lora</div>
+</div>
+<span class="text-[9px] px-1.5 py-0.5 rounded bg-tertiary/10 text-tertiary border border-tertiary/30">ACTIVE</span>
+</div>
+<div class="tree-line flex items-center justify-between p-2 bg-[#1c2126] border border-[#30363d] rounded">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary text-sm">settings_input_component</span>
+<div class="text-[11px] font-medium">oversight_lora</div>
+</div>
+<span class="text-[9px] px-1.5 py-0.5 rounded bg-tertiary/10 text-tertiary border border-tertiary/30">ACTIVE</span>
+</div>
+<div class="tree-line flex items-center justify-between p-2 bg-[#1c2126] border border-[#30363d] rounded opacity-50">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400 text-sm">settings_input_component</span>
+<div class="text-[11px] font-medium">investor_lora</div>
+</div>
+<span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-500 border border-slate-700">INACTIVE</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Reward Curve Section -->
+<div class="bg-[#161b22] border border-[#30363d] p-md">
+<div class="flex justify-between items-center mb-6">
+<div class="text-label-caps font-label-caps text-slate-300 uppercase">Training Reward Curve (120 Steps)</div>
+<div class="flex items-center gap-4 text-[10px] font-bold text-slate-500">
+<span class="flex items-center gap-1"><div class="w-2 h-2 bg-blue-900/30 border border-blue-500/30"></div> PHASE 1: EASY</span>
+<span class="flex items-center gap-1"><div class="w-2 h-2 bg-purple-900/30 border border-purple-500/30"></div> PHASE 2: MED</span>
+<span class="flex items-center gap-1"><div class="w-2 h-2 bg-orange-900/30 border border-orange-500/30"></div> PHASE 3: HARD</span>
+</div>
+</div>
+<div class="relative h-64 border-l border-b border-[#30363d]">
+<!-- Background Phase Regions -->
+<div class="absolute inset-0 flex">
+<div class="h-full w-[33%] bg-blue-500/5 border-r border-dashed border-[#30363d]"></div>
+<div class="h-full w-[33%] bg-purple-500/5 border-r border-dashed border-[#30363d]"></div>
+<div class="h-full w-[34%] bg-orange-500/5"></div>
+</div>
+<!-- Line Chart Simulation -->
+<svg class="absolute inset-0 w-full h-full preserve-3d" preserveaspectratio="none" viewbox="0 0 1000 200">
+<!-- Baseline Path -->
+<path d="M0,180 Q150,175 300,165 T600,160 T1000,158" fill="none" stroke="#30363d" stroke-dasharray="4" stroke-width="1"></path>
+<!-- GRPO Path -->
+<path d="M0,185 L50,178 L100,165 L150,140 L200,120 L250,105 L300,95 L350,90 L400,82 L450,75 L500,68 L550,62 L600,58 L650,52 L700,48 L750,42 L800,40 L850,38 L900,35 L950,32 L1000,30" fill="none" stroke="#58a6ff" stroke-width="2"></path>
+<!-- Glow for GRPO Path -->
+<path d="M0,185 L50,178 L100,165 L150,140 L200,120 L250,105 L300,95 L350,90 L400,82 L450,75 L500,68 L550,62 L600,58 L650,52 L700,48 L750,42 L800,40 L850,38 L900,35 L950,32 L1000,30" fill="none" opacity="0.1" stroke="#58a6ff" stroke-width="6"></path>
+</svg>
+<!-- Labels for axes -->
+<div class="absolute -left-8 top-0 text-[10px] text-slate-500">1.0</div>
+<div class="absolute -left-8 bottom-0 text-[10px] text-slate-500">0.0</div>
+<div class="absolute left-0 -bottom-6 text-[10px] text-slate-500">STEP 0</div>
+<div class="absolute right-0 -bottom-6 text-[10px] text-slate-500">STEP 120</div>
+</div>
+</div>
+<!-- Detailed Audit Logs Table -->
+<div class="bg-[#000000] border border-[#30363d] overflow-hidden rounded">
+<div class="px-4 py-2 bg-[#161b22] border-b border-[#30363d] flex justify-between items-center">
+<span class="text-label-caps font-label-caps text-slate-400">RAW TRAINING VERIFICATION LOGS</span>
+<div class="flex gap-2">
+<div class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></div>
+<span class="text-[9px] font-data-sm text-tertiary">STREAMING LIVE ANALYTICS</span>
+</div>
+</div>
+<div class="p-2 font-data-sm text-[11px] space-y-1">
+<div class="flex gap-4 text-slate-500">
+<span class="w-20">[14:22:01]</span>
+<span class="text-blue-400">INFO</span>
+<span>Checkpoint reached: step_120. Model validation commencing...</span>
+</div>
+<div class="flex gap-4 text-slate-500">
+<span class="w-20">[14:22:05]</span>
+<span class="text-tertiary">SUCCESS</span>
+<span>GRPO Reward Optimizer verified 98.4% alignment on 400 sample prompts.</span>
+</div>
+<div class="flex gap-4 text-slate-500">
+<span class="w-20">[14:22:12]</span>
+<span class="text-blue-400">TRACE</span>
+<span>commander_lora: Mean attention entropy decreased by 12.4% (Precision target met).</span>
+</div>
+<div class="flex gap-4 text-slate-500">
+<span class="w-20">[14:22:15]</span>
+<span class="text-orange-400">WARN</span>
+<span>oversight_lora: High variance detected in "Investor Sentiment" tokens. Increasing penalty.</span>
+</div>
+<div class="flex gap-4 text-slate-500">
+<span class="w-20">[14:22:20]</span>
+<span class="text-tertiary">SUCCESS</span>
+<span>Governance check: 0 violations found in the last 15,000 generated tokens.</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+<!-- Background Elements -->
+<div class="fixed inset-0 pointer-events-none opacity-[0.03] z-[-1]">
+<div class="absolute inset-0" style="background-image: radial-gradient(#58a6ff 1px, transparent 1px); background-size: 40px 40px;"></div>
+</div>
+</body></html>

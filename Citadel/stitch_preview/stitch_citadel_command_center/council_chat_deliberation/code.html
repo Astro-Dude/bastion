@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#004882",
+                        "inverse-primary": "#0060aa",
+                        "secondary": "#d8baff",
+                        "on-primary-container": "#003a6b",
+                        "tertiary-container": "#10bc3f",
+                        "surface-container-lowest": "#0a0e14",
+                        "tertiary": "#4be260",
+                        "surface-dim": "#10141a",
+                        "on-primary-fixed": "#001c38",
+                        "inverse-on-surface": "#2d3137",
+                        "secondary-fixed-dim": "#d8baff",
+                        "on-secondary-fixed-variant": "#5b2b9a",
+                        "on-tertiary-fixed": "#002205",
+                        "on-tertiary": "#00390c",
+                        "on-secondary": "#430882",
+                        "surface-container-low": "#181c22",
+                        "surface": "#10141a",
+                        "primary-fixed": "#d3e4ff",
+                        "surface-variant": "#31353c",
+                        "error-container": "#93000a",
+                        "secondary-fixed": "#eddcff",
+                        "on-background": "#dfe2eb",
+                        "surface-container-highest": "#31353c",
+                        "surface-container": "#1c2026",
+                        "on-tertiary-fixed-variant": "#005316",
+                        "on-surface": "#dfe2eb",
+                        "primary": "#a2c9ff",
+                        "on-error-container": "#ffdad6",
+                        "primary-container": "#58a6ff",
+                        "on-secondary-container": "#cda8ff",
+                        "on-surface-variant": "#c0c7d4",
+                        "on-secondary-fixed": "#290055",
+                        "tertiary-fixed": "#6fff7b",
+                        "on-tertiary-container": "#004310",
+                        "surface-bright": "#353940",
+                        "on-primary": "#00315c",
+                        "tertiary-fixed-dim": "#4be260",
+                        "primary-fixed-dim": "#a2c9ff",
+                        "outline-variant": "#414752",
+                        "error": "#ffb4ab",
+                        "background": "#10141a",
+                        "outline": "#8b919d",
+                        "on-error": "#690005",
+                        "inverse-surface": "#dfe2eb",
+                        "surface-tint": "#a2c9ff",
+                        "secondary-container": "#5d2d9c",
+                        "surface-container-high": "#262a31"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "xs": "4px",
+                        "unit": "4px",
+                        "margin": "24px",
+                        "gutter": "16px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Inter"],
+                        "data-lg": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "h1": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-sm": ["JetBrains Mono"],
+                        "data-md": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "h2": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "data-lg": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                        "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "h1": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "data-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "data-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 z-50 flex justify-between items-center w-full px-6 h-16 bg-[#161b22] border-b border-[#30363d] font-inter tracking-tight font-medium flat no shadows">
+<div class="flex items-center gap-8">
+<span class="text-xl font-black tracking-widest text-[#58a6ff] uppercase">Citadel Command Center</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="text-slate-400 hover:text-blue-300 transition-colors duration-200" href="#">Main Feed</a>
+<a class="text-[#58a6ff] border-b-2 border-[#58a6ff] pb-1" href="#">Council Chat</a>
+<a class="text-slate-400 hover:text-blue-300 transition-colors duration-200" href="#">System Logs</a>
+</nav>
+</div>
+<div class="flex items-center gap-4 text-[#58a6ff]">
+<span class="material-symbols-outlined cursor-pointer hover:text-blue-300 transition-colors duration-200">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-blue-300 transition-colors duration-200">security</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-blue-300 transition-colors duration-200">account_circle</span>
+</div>
+</header>
+<div class="flex h-screen pt-16">
+<!-- Sidebar Navigation -->
+<aside class="flex flex-col h-full w-64 bg-[#0d1117] border-r border-[#30363d] pt-4 space-y-2 flat font-inter text-sm antialiased shrink-0">
+<div class="px-6 mb-6">
+<h2 class="font-bold text-[#58a6ff]">CITADEL</h2>
+<p class="text-[10px] text-slate-500 uppercase tracking-widest">SOC TERMINAL</p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">sensors</span> Live Ops
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 bg-[#1c2128] text-[#58a6ff] border-r-4 border-[#58a6ff] shadow-[inset_0_0_10px_rgba(88,166,255,0.1)] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">forum</span> Council Chat
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">hub</span> Slack Workspace
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">notification_important</span> ServiceNow &amp; PagerDuty
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">history</span> Timeline
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">analytics</span> Model Improvements
+                </a>
+</nav>
+</aside>
+<!-- Main Workspace -->
+<main class="flex-1 flex flex-col bg-background overflow-hidden">
+<!-- Playback Toolbar -->
+<div class="h-14 border-b border-[#30363d] bg-surface flex items-center justify-between px-6 shrink-0">
+<div class="flex items-center gap-4">
+<span class="font-label-caps text-on-surface-variant uppercase">Incident ID: #IX-9022</span>
+<div class="h-4 w-px bg-outline-variant"></div>
+<span class="font-data-md text-primary">Session: active_deliberation_04</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<button class="p-1 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">skip_previous</span>
+</button>
+<button class="px-4 py-1 bg-primary text-on-primary flex items-center gap-2 rounded-sm text-sm font-bold">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span> PLAYBACK
+                        </button>
+<button class="p-1 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">skip_next</span>
+</button>
+</div>
+<div class="font-data-md text-on-surface-variant">
+                        Step <span class="text-primary font-bold">2</span> / 10
+                    </div>
+</div>
+</div>
+<!-- Conversation Feed -->
+<div class="flex-1 overflow-y-auto p-gutter space-y-xl bg-[radial-gradient(circle_at_50%_50%,_rgba(22,27,34,1)_0%,_rgba(13,17,23,1)_100%)]">
+<!-- Block 01: Initial Detection -->
+<div class="max-w-5xl mx-auto space-y-md">
+<div class="flex justify-center">
+<span class="px-3 py-1 bg-surface-container border border-outline-variant rounded-full text-xs font-data-sm text-outline uppercase tracking-widest">Incident Hour 04:00 - Triage</span>
+</div>
+<div class="grid grid-cols-12 gap-md relative">
+<!-- Connecting Line -->
+<div class="absolute left-1/2 top-0 bottom-0 w-px bg-[#30363d] -translate-x-1/2 hidden md:block"></div>
+<!-- CMD Card (Left) -->
+<div class="col-span-12 md:col-span-5">
+<div class="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden transition-all hover:border-primary-container group">
+<div class="bg-[#1c2128] px-md py-sm flex justify-between items-center border-b border-[#30363d]">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="font-label-caps text-primary uppercase">Commander Agent (CMD)</span>
+</div>
+<span class="font-data-sm text-tertiary">+0.18</span>
+</div>
+<div class="p-md space-y-sm">
+<div class="flex flex-col gap-1">
+<span class="text-xs text-slate-500 font-label-caps">PROPOSED ACTION</span>
+<span class="text-h2 text-primary font-bold">Isolate Subnet-7</span>
+</div>
+<div class="bg-black/40 p-sm rounded border border-[#30363d] font-data-sm text-on-surface-variant">
+                                        Target: 192.168.1.104/24 - High-Frequency Outbound
+                                    </div>
+<p class="text-body-md text-on-surface-variant leading-relaxed">
+                                        Detected anomalous data exfiltration patterns consistent with APT-28 signatures. Previous lessons suggest immediate isolation to prevent lateral movement.
+                                    </p>
+<div class="flex flex-wrap gap-2 pt-2">
+<span class="px-2 py-0.5 bg-on-primary-fixed-variant text-primary-fixed rounded-full text-[10px] font-bold uppercase">L-0002</span>
+<span class="px-2 py-0.5 bg-on-primary-fixed-variant text-primary-fixed rounded-full text-[10px] font-bold uppercase">L-0045</span>
+</div>
+</div>
+</div>
+</div>
+<!-- OVR Card (Right) -->
+<div class="col-span-12 md:col-span-5 md:col-start-8">
+<div class="bg-[#161b22] border border-secondary-container/30 rounded-lg overflow-hidden transition-all hover:border-secondary group">
+<div class="bg-[#1c2128] px-md py-sm flex justify-between items-center border-b border-[#30363d]">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="font-label-caps text-secondary uppercase">Oversight Agent (OVR)</span>
+</div>
+<span class="font-data-sm text-tertiary">+0.42</span>
+</div>
+<div class="p-md space-y-sm">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<span class="text-xs text-slate-500 font-label-caps">VERDICT</span>
+<span class="text-h2 text-secondary font-bold">REVISE</span>
+</div>
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+</div>
+<div class="bg-error-container/10 p-sm rounded border border-error-container/30 font-data-sm text-error">
+                                        Weakness: Collateral damage high. Node 1.104 hosts SQL-PROD-A.
+                                    </div>
+<div class="space-y-1">
+<span class="text-[10px] text-slate-500 font-label-caps">COUNTER-PROPOSAL</span>
+<p class="text-body-md text-on-surface-variant">
+                                            Implement rate-limiting on port 443 instead of total isolation. Re-assess in 300s.
+                                        </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Execution Status (Center) -->
+<div class="col-span-12 flex justify-center py-4 z-10">
+<div class="flex items-center gap-3 px-4 py-2 bg-error-container/20 border border-error-container/40 rounded-full text-error font-bold text-xs uppercase tracking-widest shadow-lg backdrop-blur-sm">
+<span class="material-symbols-outlined text-[16px]">block</span>
+                                ACTION BLOCKED BY OVERSIGHT
+                            </div>
+</div>
+</div>
+</div>
+<!-- Block 02: Refinement -->
+<div class="max-w-5xl mx-auto space-y-md">
+<div class="grid grid-cols-12 gap-md relative">
+<!-- Connecting Line -->
+<div class="absolute left-1/2 top-0 bottom-0 w-px bg-[#30363d] -translate-x-1/2 hidden md:block"></div>
+<!-- CMD Card (Left) -->
+<div class="col-span-12 md:col-span-5">
+<div class="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
+<div class="bg-[#1c2128] px-md py-sm flex justify-between items-center border-b border-[#30363d]">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="font-label-caps text-primary uppercase">Commander Agent (CMD)</span>
+</div>
+<span class="font-data-sm text-tertiary">+0.12</span>
+</div>
+<div class="p-md space-y-sm">
+<div class="flex flex-col gap-1">
+<span class="text-xs text-slate-500 font-label-caps">REFINED ACTION</span>
+<span class="text-h2 text-primary font-bold">Restrict Port 443</span>
+</div>
+<p class="text-body-md text-on-surface-variant">
+                                        Adjusting to OVR feedback. Initiating throttling on egress traffic while maintaining database connectivity. 
+                                    </p>
+<div class="flex flex-wrap gap-2 pt-2">
+<span class="px-2 py-0.5 bg-on-primary-fixed-variant text-primary-fixed rounded-full text-[10px] font-bold uppercase">L-0002</span>
+</div>
+</div>
+</div>
+</div>
+<!-- OVR Card (Right) -->
+<div class="col-span-12 md:col-span-5 md:col-start-8">
+<div class="bg-[#161b22] border border-tertiary-container/30 rounded-lg overflow-hidden">
+<div class="bg-[#1c2128] px-md py-sm flex justify-between items-center border-b border-[#30363d]">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="font-label-caps text-tertiary uppercase">Oversight Agent (OVR)</span>
+</div>
+<span class="font-data-sm text-tertiary">+0.15</span>
+</div>
+<div class="p-md space-y-sm">
+<div class="flex flex-col gap-1">
+<span class="text-xs text-slate-500 font-label-caps">VERDICT</span>
+<span class="text-h2 text-tertiary font-bold uppercase">APPROVE</span>
+</div>
+<p class="text-body-md text-on-surface-variant">
+                                        Risk balanced. Mitigation meets safety threshold for production assets.
+                                    </p>
+</div>
+</div>
+</div>
+<!-- Execution Status (Center) -->
+<div class="col-span-12 flex justify-center py-4 z-10">
+<div class="flex items-center gap-3 px-4 py-2 bg-tertiary-container/20 border border-tertiary-container/40 rounded-full text-tertiary font-bold text-xs uppercase tracking-widest shadow-lg backdrop-blur-sm">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                ACTION EXECUTED SUCCESSFULLY
+                            </div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Right Panel: Playbook Lessons -->
+<aside class="w-80 bg-surface-container-low border-l border-[#30363d] flex flex-col shrink-0">
+<div class="p-md border-b border-[#30363d] flex items-center justify-between bg-surface">
+<h3 class="font-label-caps text-on-surface uppercase">Playbook Lessons</h3>
+<span class="material-symbols-outlined text-slate-500 text-[20px]">menu_book</span>
+</div>
+<div class="flex-1 overflow-y-auto p-md space-y-md">
+<!-- Lesson Card -->
+<div class="bg-surface border border-[#30363d] rounded-lg p-sm space-y-sm group hover:border-primary transition-colors">
+<div class="flex justify-between items-center">
+<span class="font-data-sm text-primary">L-0002</span>
+<span class="text-[10px] text-slate-500 uppercase">Utility: 0.94</span>
+</div>
+<p class="text-[12px] leading-snug text-on-surface-variant">
+                        "Lateral movement through Port 445 often follows initial web-tier compromise. Isolate smb.exe processes immediately."
+                    </p>
+<div class="flex justify-end gap-2 border-t border-[#30363d] pt-2">
+<button class="text-slate-500 hover:text-primary"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="text-slate-500 hover:text-primary"><span class="material-symbols-outlined text-[16px]">share</span></button>
+<button class="text-slate-500 hover:text-primary"><span class="material-symbols-outlined text-[16px]">visibility</span></button>
+</div>
+</div>
+<!-- Lesson Card -->
+<div class="bg-surface border border-[#30363d] rounded-lg p-sm space-y-sm group hover:border-primary transition-colors">
+<div class="flex justify-between items-center">
+<span class="font-data-sm text-primary">L-0045</span>
+<span class="text-[10px] text-slate-500 uppercase">Utility: 0.88</span>
+</div>
+<p class="text-[12px] leading-snug text-on-surface-variant">
+                        "Prioritize Uptime for SQL-PROD nodes during exfiltration events unless data loss exceeds 50MB threshold."
+                    </p>
+<div class="flex justify-end gap-2 border-t border-[#30363d] pt-2">
+<button class="text-slate-500 hover:text-primary"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="text-slate-500 hover:text-primary"><span class="material-symbols-outlined text-[16px]">share</span></button>
+<button class="text-slate-500 hover:text-primary"><span class="material-symbols-outlined text-[16px]">visibility</span></button>
+</div>
+</div>
+<!-- Lesson Card -->
+<div class="bg-surface border border-[#30363d] rounded-lg p-sm space-y-sm group hover:border-primary transition-colors opacity-60">
+<div class="flex justify-between items-center">
+<span class="font-data-sm text-primary">L-0102</span>
+<span class="text-[10px] text-slate-500 uppercase">Utility: 0.12</span>
+</div>
+<p class="text-[12px] leading-snug text-on-surface-variant">
+                        "Broadcast global lockout if encrypted payload detected in header."
+                    </p>
+<div class="flex justify-end gap-2 border-t border-[#30363d] pt-2">
+<button class="text-slate-500 hover:text-primary"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="text-slate-500 hover:text-primary"><span class="material-symbols-outlined text-[16px]">share</span></button>
+<button class="text-slate-500 hover:text-primary"><span class="material-symbols-outlined text-[16px]">visibility</span></button>
+</div>
+</div>
+</div>
+<!-- New Lesson Prompt -->
+<div class="p-md bg-surface-container border-t border-[#30363d]">
+<button class="w-full py-2 bg-on-surface-variant/10 border border-outline-variant text-on-surface-variant font-label-caps rounded flex items-center justify-center gap-2 hover:bg-on-surface-variant/20 transition-all">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    INDEX NEW LESSON
+                </button>
+</div>
+</aside>
+</div>
+<!-- Floating Action Button - Supressed on this view as per hierarchy rules for Detail/Context pages -->
+</body></html>

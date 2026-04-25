@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Citadel Command Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#d8baff",
+                        "error": "#ffb4ab",
+                        "primary-container": "#58a6ff",
+                        "surface-container": "#1c2026",
+                        "surface-tint": "#a2c9ff",
+                        "secondary": "#d8baff",
+                        "outline-variant": "#414752",
+                        "inverse-primary": "#0060aa",
+                        "surface-dim": "#10141a",
+                        "on-tertiary": "#00390c",
+                        "on-primary": "#00315c",
+                        "surface-variant": "#31353c",
+                        "primary-fixed": "#d3e4ff",
+                        "on-background": "#dfe2eb",
+                        "on-surface-variant": "#c0c7d4",
+                        "surface-container-high": "#262a31",
+                        "surface": "#10141a",
+                        "inverse-on-surface": "#2d3137",
+                        "primary": "#a2c9ff",
+                        "on-primary-container": "#003a6b",
+                        "on-secondary": "#430882",
+                        "on-tertiary-container": "#004310",
+                        "on-error": "#690005",
+                        "inverse-surface": "#dfe2eb",
+                        "on-tertiary-fixed": "#002205",
+                        "surface-container-highest": "#31353c",
+                        "background": "#10141a",
+                        "surface-bright": "#353940",
+                        "error-container": "#93000a",
+                        "tertiary-fixed": "#6fff7b",
+                        "surface-container-low": "#181c22",
+                        "tertiary-container": "#10bc3f",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#004882",
+                        "secondary-fixed": "#eddcff",
+                        "tertiary": "#4be260",
+                        "on-secondary-container": "#cda8ff",
+                        "outline": "#8b919d",
+                        "on-secondary-fixed": "#290055",
+                        "on-primary-fixed": "#001c38",
+                        "on-tertiary-fixed-variant": "#005316",
+                        "on-surface": "#dfe2eb",
+                        "on-secondary-fixed-variant": "#5b2b9a",
+                        "secondary-container": "#5d2d9c",
+                        "surface-container-lowest": "#0a0e14",
+                        "tertiary-fixed-dim": "#4be260",
+                        "primary-fixed-dim": "#a2c9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "lg": "24px",
+                        "xs": "4px",
+                        "margin": "24px"
+                    },
+                    "fontFamily": {
+                        "data-sm": ["JetBrains Mono"],
+                        "data-md": ["JetBrains Mono"],
+                        "h1": ["Inter"],
+                        "body-md": ["Inter"],
+                        "h2": ["Inter"],
+                        "data-lg": ["JetBrains Mono"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "data-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "data-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "h1": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "h2": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "data-lg": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                        "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #0d1117; color: #dfe2eb; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glow-blue { box-shadow: 0 0 15px rgba(88, 166, 255, 0.15); }
+        .glow-purple { box-shadow: 0 0 15px rgba(188, 140, 255, 0.15); }
+        .pulse-error { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-hidden">
+<!-- TopAppBar Shell -->
+<header class="flex justify-between items-center w-full px-6 h-16 sticky top-0 z-50 bg-[#0d1117] border-b border-[#30363d] font-['Inter'] font-medium tracking-tight">
+<div class="flex items-center gap-6">
+<span class="text-lg font-black tracking-widest text-[#58a6ff] uppercase">CITADEL COMMAND</span>
+<div class="flex items-center bg-[#161b22] px-4 py-1.5 rounded-lg border border-[#30363d] gap-3">
+<span class="material-symbols-outlined text-tertiary text-[18px]">verified_user</span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Status: ACTIVE INCIDENT</span>
+<div class="h-4 w-[1px] bg-[#30363d]"></div>
+<span class="font-label-caps text-label-caps text-primary">Score: 94.2</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-[#161b22] rounded-lg border border-[#30363d] overflow-hidden">
+<button class="px-3 py-2 hover:bg-[#30363d] transition-colors border-r border-[#30363d] text-[#8b949e]">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<div class="px-4 text-data-sm font-data-sm text-on-surface">STEP 02 / 04</div>
+<button class="px-3 py-2 hover:bg-[#30363d] transition-colors text-primary">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<button class="bg-primary-container text-on-primary px-4 py-2 rounded font-label-caps text-label-caps uppercase font-bold hover:opacity-90 transition-opacity">
+                LOAD DEMO
+            </button>
+<div class="flex gap-2 ml-2">
+<span class="material-symbols-outlined text-[#8b949e] cursor-pointer hover:text-on-surface transition-colors">notifications</span>
+<span class="material-symbols-outlined text-[#8b949e] cursor-pointer hover:text-on-surface transition-colors">settings</span>
+</div>
+</div>
+</header>
+<div class="flex h-[calc(100vh-64px)] overflow-hidden">
+<!-- SideNavBar Shell -->
+<nav class="w-64 flex flex-col bg-[#0d1117] border-r border-[#30363d] pt-8 pb-4 shrink-0 transition-all duration-300 ease-in-out">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[20px]">security</span>
+</div>
+<div>
+<div class="font-h2 text-h2 text-on-surface leading-none mb-1">CITADEL</div>
+<div class="text-[10px] font-label-caps tracking-widest text-[#8b949e] uppercase">Vigilance Level 4</div>
+</div>
+</div>
+</div>
+<div class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-6 py-3 bg-[#161b22] text-[#58a6ff] border-l-4 border-[#58a6ff] shadow-[0_0_15px_rgba(88,166,255,0.2)] font-label-caps text-sm font-semibold uppercase tracking-wider group" href="#">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+<span>Threat Matrix</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-[#8b949e] opacity-70 hover:bg-[#161b22] hover:text-[#58a6ff] transition-all font-label-caps text-sm font-semibold uppercase tracking-wider group" href="#">
+<span class="material-symbols-outlined text-[20px]">emergency_home</span>
+<span>Active Incidents</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-[#8b949e] opacity-70 hover:bg-[#161b22] hover:text-[#58a6ff] transition-all font-label-caps text-sm font-semibold uppercase tracking-wider group" href="#">
+<span class="material-symbols-outlined text-[20px]">terminal</span>
+<span>SIEM Logs</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-[#8b949e] opacity-70 hover:bg-[#161b22] hover:text-[#58a6ff] transition-all font-label-caps text-sm font-semibold uppercase tracking-wider group" href="#">
+<span class="material-symbols-outlined text-[20px]">shield</span>
+<span>Governance</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-[#8b949e] opacity-70 hover:bg-[#161b22] hover:text-[#58a6ff] transition-all font-label-caps text-sm font-semibold uppercase tracking-wider group" href="#">
+<span class="material-symbols-outlined text-[20px]">dns</span>
+<span>Fleet Status</span>
+</a>
+</div>
+<div class="mt-auto px-4 space-y-4">
+<button class="w-full py-3 rounded bg-error-container text-on-error-container font-label-caps text-[11px] font-bold tracking-widest hover:brightness-110 transition-all border border-[#93000a]">
+                    INITIATE LOCKDOWN
+                
+<div class="pt-4 border-t border-[#30363d] space-y-1">
+<a class="flex items-center gap-3 px-2 py-2 text-[#8b949e] hover:text-on-surface transition-colors font-label-caps text-xs uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-[18px]">help</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-3 px-2 py-2 text-[#8b949e] hover:text-on-surface transition-colors font-label-caps text-xs uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-[18px]">sensors</span>
+<span>System Status</span>
+</a>
+</div>
+</button></div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-hidden bg-[#10141a]">
+<!-- Dashboard Content: Live Ops (Tab 1 Active) -->
+<div class="flex-1 p-6 grid grid-cols-12 gap-6 overflow-hidden">
+<!-- Left Panel: SIEM Terminal -->
+<div class="col-span-3 flex flex-col bg-[#0d1117] border border-[#30363d] rounded-lg overflow-hidden">
+<div class="px-4 py-3 border-b border-[#30363d] bg-[#161b22] flex justify-between items-center">
+<span class="font-label-caps text-label-caps uppercase tracking-widest text-[#8b949e]">SIEM TERMINAL</span>
+<div class="flex gap-1.5">
+<div class="w-2 h-2 rounded-full bg-error pulse-error"></div>
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+</div>
+</div>
+<div class="flex-1 p-3 font-data-sm text-data-sm bg-black overflow-y-auto custom-scrollbar leading-relaxed">
+<div class="text-[#8b949e] mb-1">[14:22:01] <span class="text-primary">INFO:</span> Listening on port 443...</div>
+<div class="text-[#8b949e] mb-1">[14:22:15] <span class="text-error">WARN:</span> Anomalous traffic detected from 192.168.1.104</div>
+<div class="text-error mb-1">[14:22:16] CRITICAL: Buffer overflow attempt mitigated.</div>
+<div class="text-[#8b949e] mb-1">[14:22:20] <span class="text-primary">INFO:</span> Sentinel-7 heart-beat verified.</div>
+<div class="text-secondary-fixed-dim mb-1">[14:23:45] OVERSIGHT: Requesting audit for Node-04.</div>
+<div class="text-[#8b949e] mb-1">[14:24:02] <span class="text-error">WARN:</span> Multiple failed login attempts on DB-Main.</div>
+<div class="text-[#8b949e] mb-1">[14:24:05] <span class="text-primary">INFO:</span> Rotating encryption keys for Tier-1 nodes.</div>
+<div class="text-[#8b949e] mb-1">[14:25:11] <span class="text-error">WARN:</span> Latency spike detected in EU-West-2 cluster.</div>
+<div class="text-tertiary mb-1">[14:26:30] SAFE: Patch deployment successful on 12/12 targets.</div>
+<div class="text-[#8b949e] mb-1">[14:27:00] <span class="text-primary">INFO:</span> Analyzing payload from last incident...</div>
+<div class="text-[#8b949e] mb-1">[14:27:15] <span class="text-secondary">OVERSIGHT:</span> Token-7 protocol authorized.</div>
+</div>
+</div>
+<!-- Center Panel: Systems Map -->
+<div class="col-span-6 flex flex-col gap-6">
+<!-- Metrics Row -->
+<div class="grid grid-cols-4 gap-4 shrink-0">
+<div class="bg-[#161b22] border border-[#30363d] p-4 rounded-lg">
+<div class="text-label-caps font-label-caps text-[#8b949e] uppercase mb-1">Threats Blocked</div>
+<div class="text-h1 font-h1 text-primary">12,402</div>
+</div>
+<div class="bg-[#161b22] border border-[#30363d] p-4 rounded-lg">
+<div class="text-label-caps font-label-caps text-[#8b949e] uppercase mb-1">Uptime</div>
+<div class="text-h1 font-h1 text-tertiary">99.998%</div>
+</div>
+<div class="bg-[#161b22] border border-[#30363d] p-4 rounded-lg border-l-4 border-l-error">
+<div class="text-label-caps font-label-caps text-[#8b949e] uppercase mb-1">Risk Index</div>
+<div class="text-h1 font-h1 text-error">4.2</div>
+</div>
+<div class="bg-[#161b22] border border-[#30363d] p-4 rounded-lg">
+<div class="text-label-caps font-label-caps text-[#8b949e] uppercase mb-1">Fleet Load</div>
+<div class="text-h1 font-h1 text-on-surface">32%</div>
+</div>
+</div>
+<!-- Systems Grid -->
+<div class="flex-1 bg-[#161b22] border border-[#30363d] rounded-lg p-6 flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-h2 text-h2">Systems Matrix</h3>
+<div class="flex gap-2">
+<div class="flex items-center gap-1.5">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="text-data-sm text-[#8b949e]">Operational</span>
+</div>
+<div class="flex items-center gap-1.5 ml-4">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="text-data-sm text-[#8b949e]">Compromised</span>
+</div>
+</div>
+</div>
+<div class="flex-1 grid grid-cols-4 grid-rows-2 gap-4">
+<!-- Grid Item 1 -->
+<div class="bg-[#0d1117] border border-[#30363d] rounded p-4 flex flex-col justify-between group hover:border-primary-container transition-all cursor-pointer">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-tertiary">dns</span>
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+</div>
+<div>
+<div class="font-label-caps text-[10px] text-[#8b949e] uppercase tracking-tighter">Core-Node-01</div>
+<div class="text-data-md text-on-surface">Operational</div>
+</div>
+</div>
+<!-- Grid Item 2 (Infected) -->
+<div class="bg-[#1c1414] border border-error-container rounded p-4 flex flex-col justify-between group hover:border-error transition-all cursor-pointer relative overflow-hidden">
+<div class="absolute inset-0 bg-error/5 opacity-20 pulse-error"></div>
+<div class="flex justify-between items-start relative z-10">
+<span class="material-symbols-outlined text-error">cloud_sync</span>
+<div class="w-2 h-2 rounded-full bg-error pulse-error"></div>
+</div>
+<div class="relative z-10">
+<div class="font-label-caps text-[10px] text-[#8b949e] uppercase tracking-tighter">Cloud-Sync-X</div>
+<div class="text-data-md text-error">Anomaly Detected</div>
+</div>
+</div>
+<!-- Grid Item 3 -->
+<div class="bg-[#0d1117] border border-[#30363d] rounded p-4 flex flex-col justify-between group hover:border-primary-container transition-all cursor-pointer">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-tertiary">database</span>
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+</div>
+<div>
+<div class="font-label-caps text-[10px] text-[#8b949e] uppercase tracking-tighter">Postgres-04</div>
+<div class="text-data-md text-on-surface">Operational</div>
+</div>
+</div>
+<!-- Grid Item 4 -->
+<div class="bg-[#0d1117] border border-[#30363d] rounded p-4 flex flex-col justify-between group hover:border-primary-container transition-all cursor-pointer">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-tertiary">router</span>
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+</div>
+<div>
+<div class="font-label-caps text-[10px] text-[#8b949e] uppercase tracking-tighter">Gateway-Main</div>
+<div class="text-data-md text-on-surface">Operational</div>
+</div>
+</div>
+<!-- Grid Item 5 -->
+<div class="bg-[#0d1117] border border-[#30363d] rounded p-4 flex flex-col justify-between group hover:border-primary-container transition-all cursor-pointer">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-tertiary">hub</span>
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+</div>
+<div>
+<div class="font-label-caps text-[10px] text-[#8b949e] uppercase tracking-tighter">Mesh-Relay-3</div>
+<div class="text-data-md text-on-surface">Operational</div>
+</div>
+</div>
+<!-- Grid Item 6 -->
+<div class="bg-[#1c1414] border border-error-container rounded p-4 flex flex-col justify-between group hover:border-error transition-all cursor-pointer relative overflow-hidden">
+<div class="absolute inset-0 bg-error/5 opacity-20 pulse-error"></div>
+<div class="flex justify-between items-start relative z-10">
+<span class="material-symbols-outlined text-error">key</span>
+<div class="w-2 h-2 rounded-full bg-error pulse-error"></div>
+</div>
+<div class="relative z-10">
+<div class="font-label-caps text-[10px] text-[#8b949e] uppercase tracking-tighter">Auth-Vault</div>
+<div class="text-data-md text-error">Auth-Spamming</div>
+</div>
+</div>
+<!-- Grid Item 7 -->
+<div class="bg-[#0d1117] border border-[#30363d] rounded p-4 flex flex-col justify-between group hover:border-primary-container transition-all cursor-pointer">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-tertiary">monitoring</span>
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+</div>
+<div>
+<div class="font-label-caps text-[10px] text-[#8b949e] uppercase tracking-tighter">Grafana-01</div>
+<div class="text-data-md text-on-surface">Operational</div>
+</div>
+</div>
+<!-- Grid Item 8 -->
+<div class="bg-[#0d1117] border border-[#30363d] rounded p-4 flex flex-col justify-between group hover:border-primary-container transition-all cursor-pointer">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-tertiary">inventory_2</span>
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+</div>
+<div>
+<div class="font-label-caps text-[10px] text-[#8b949e] uppercase tracking-tighter">Backups-Arch</div>
+<div class="text-data-md text-on-surface">Operational</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Panel: Governance & Stakeholders -->
+<div class="col-span-3 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
+<div class="bg-[#161b22] border border-[#30363d] rounded-lg p-5">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-secondary text-lg">policy</span>
+<h3 class="font-h2 text-h2">Governance</h3>
+</div>
+<div class="space-y-4">
+<div class="p-3 bg-[#0d1117] border border-[#30363d] rounded">
+<div class="flex justify-between mb-2">
+<span class="font-label-caps text-[10px] text-secondary uppercase tracking-widest">Oversight Board</span>
+<span class="text-[10px] text-[#8b949e]">Awaiting...</span>
+</div>
+<p class="text-body-md text-[#c9d1d9]">Mandatory audit of Tier-2 node isolation required by SEC-12 protocol.</p>
+<div class="mt-3 flex gap-2">
+<button class="flex-1 py-1.5 text-[10px] border border-secondary text-secondary font-bold uppercase rounded hover:bg-secondary/10 transition-colors">Authorize</button>
+<button class="flex-1 py-1.5 text-[10px] border border-[#30363d] text-[#8b949e] font-bold uppercase rounded">Decline</button>
+</div>
+</div>
+<div class="p-3 bg-[#0d1117] border border-[#30363d] rounded opacity-60">
+<div class="flex justify-between mb-2">
+<span class="font-label-caps text-[10px] text-tertiary uppercase tracking-widest">Legal Counsel</span>
+<span class="text-[10px] text-tertiary">Completed</span>
+</div>
+<p class="text-body-md text-[#c9d1d9]">Privacy disclosure for data breach under GDPR-4.5 approved.</p>
+</div>
+</div>
+</div>
+<div class="bg-[#161b22] border border-[#30363d] rounded-lg p-5">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary text-lg">groups</span>
+<h3 class="font-h2 text-h2">Stakeholders</h3>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="relative">
+<img alt="CEO" class="w-10 h-10 rounded-full border border-primary grayscale hover:grayscale-0 transition-all cursor-pointer" data-alt="professional portrait of an older male executive with silver hair in a dark suit against a corporate background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuT_phdfHCVipvBQ5t195hCC5FIC2Rmv0db947St7C3lzfn1BKK8IGKXOt3glOmxA-c7Qy95OT_JHY0Q20pJoLtb29jg64fkb_YZ4NP9apETQdXfglACz9RyXvo9Z5EnZVK_w-wRab_51Vkix2GZnySrTYnuu9MX1Y8117h6ZAqsJRSOrqBD8sQxJtRAjc5_PsJLJJp6mgt2z8lk2hpQ0nVNeH1D0jYaz1JI_rcFzb3_UTp8nDnlOEwzr3hp2x81VPbXSOujWVNRA"/>
+<div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-error border-2 border-[#161b22]"></div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-center">
+<div class="text-data-md text-on-surface">Marcus Sterling</div>
+<span class="text-[10px] font-label-caps text-error bg-error/10 px-1 rounded">PANIC</span>
+</div>
+<div class="text-[10px] text-[#8b949e]">CEO - High Anxiety</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<img alt="CISO" class="w-10 h-10 rounded-full border border-secondary grayscale hover:grayscale-0 transition-all cursor-pointer" data-alt="modern professional woman in her 30s wearing glasses and a focused expression in a workspace setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzzq0cplckhloKk8RiB26lPxjcgUJ03VIMovOa9bFayH0oPemrjExwIRLZPIaqFTqv0siKDcwdArxM4p7ufCyaPIC_fgwazLke5se3F4EShQUl2UbZ8fsOSut6JcU3T5cTXpMwK26_KNtPs531c8pcsBOXtdTDLn_-svwGhBx_J21G2VjVlItwhCXlLdz444T6jPTnMHIQnrKHXP4c1c8RpDC1PrK3YhJxbYP7r3guLiIO-0u0po7EQFEGyr5pgFPDMMmdL38SZhA"/>
+<div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-tertiary border-2 border-[#161b22]"></div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-center">
+<div class="text-data-md text-on-surface">Elena Vance</div>
+<span class="text-[10px] font-label-caps text-tertiary bg-tertiary/10 px-1 rounded">STABLE</span>
+</div>
+<div class="text-[10px] text-[#8b949e]">CISO - Analyzing Ops</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Dashboard Content: Slack Workspace (Mock Overlay Concept) -->
+<!-- Note: Usually this would be hidden/visible based on tab state. Here we show the Live Ops view as requested. -->
+<!-- Bottom Horizontal Timeline (Persistent on Dashboard for context) -->
+<div class="h-32 bg-[#0d1117] border-t border-[#30363d] px-6 py-3 flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-[10px] text-[#8b949e] uppercase tracking-widest">Incident Timeline / Master Scrubber</span>
+<div class="flex gap-4">
+<div class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-primary"></div><span class="text-[9px] uppercase">SIEM</span></div>
+<div class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-secondary"></div><span class="text-[9px] uppercase">Decision</span></div>
+<div class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-tertiary"></div><span class="text-[9px] uppercase">Action</span></div>
+</div>
+</div>
+<div class="flex-1 relative overflow-x-auto custom-scrollbar flex items-center">
+<div class="absolute top-1/2 left-0 w-full h-[1px] bg-[#30363d]"></div>
+<div class="flex gap-16 min-w-max px-4">
+<div class="relative">
+<div class="w-3 h-3 rounded-full bg-primary absolute -top-1.5 left-0"></div>
+<div class="mt-4">
+<div class="text-[9px] font-bold text-primary uppercase">14:00</div>
+<div class="text-[10px] text-[#8b949e]">Initial Breach Detected</div>
+</div>
+</div>
+<div class="relative">
+<div class="w-3 h-3 rounded-full bg-tertiary absolute -top-1.5 left-0"></div>
+<div class="mt-4">
+<div class="text-[9px] font-bold text-tertiary uppercase">14:12</div>
+<div class="text-[10px] text-[#8b949e]">Containment Protocol A</div>
+</div>
+</div>
+<div class="relative">
+<div class="w-3 h-3 rounded-full bg-secondary absolute -top-1.5 left-0"></div>
+<div class="mt-4">
+<div class="text-[9px] font-bold text-secondary uppercase">14:20</div>
+<div class="text-[10px] text-[#8b949e]">Board Approval Pending</div>
+</div>
+</div>
+<div class="relative">
+<div class="w-3 h-3 rounded-full bg-error absolute -top-1.5 left-0 pulse-error"></div>
+<div class="mt-4">
+<div class="text-[9px] font-bold text-error uppercase">NOW</div>
+<div class="text-[10px] text-error font-bold">CRITICAL SPIKE</div>
+</div>
+</div>
+<div class="relative opacity-20">
+<div class="w-3 h-3 rounded-full bg-[#30363d] absolute -top-1.5 left-0"></div>
+<div class="mt-4">
+<div class="text-[9px] font-bold text-[#30363d] uppercase">15:00</div>
+<div class="text-[10px] text-[#30363d]">Predicted Resolution</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Floating Command Bar (FAB Suppression Rule Applied: Hidden on Dashboard as it's complex enough) -->
+<!-- However, providing a localized action for the step transition as requested -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#1c2026] border border-[#30363d] rounded-full px-6 py-3 flex items-center gap-6 shadow-2xl z-50">
+<div class="flex items-center gap-2 border-r border-[#30363d] pr-6">
+<span class="w-3 h-3 rounded-full bg-tertiary"></span>
+<span class="font-label-caps text-xs text-on-surface uppercase font-bold">System Online</span>
+</div>
+<div class="flex gap-4">
+<button class="p-2 text-[#8b949e] hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chat</span>
+</button>
+<button class="p-2 text-[#8b949e] hover:text-primary transition-colors">
+<span class="material-symbols-outlined">work_history</span>
+</button>
+<button class="p-2 text-primary border border-primary/30 rounded-lg bg-primary/5">
+<span class="material-symbols-outlined">analytics</span>
+</button>
+</div>
+<div class="flex items-center gap-4 border-l border-[#30363d] pl-6">
+<span class="text-data-sm text-[#8b949e]">Phase 2: Deliberation</span>
+<button class="bg-primary-container text-on-primary-container px-4 py-1 rounded text-xs font-bold uppercase tracking-widest hover:opacity-80 transition-opacity">
+                Next Decision
+            </button>
+</div>
+</div>
+<!-- Global JS Logic Mock (Structural only as per constraints) -->
+<!-- 
+    DEMO_DATA = { 
+        steps: [
+            { id: 0, status: "Quiet", threats: 0, score: 100 },
+            { id: 1, status: "Breach Detected", threats: 4, score: 85 },
+            { id: 2, status: "Lateral Movement", threats: 12, score: 72 },
+            { id: 3, status: "Ransomware Launch", threats: 45, score: 40 }
+        ]
+    };
+    currentState = 2; // Representing Step 2
+    -->
+</body></html>

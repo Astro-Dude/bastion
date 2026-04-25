@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-fixed-variant": "#004882",
+            "inverse-primary": "#0060aa",
+            "secondary": "#d8baff",
+            "on-primary-container": "#003a6b",
+            "tertiary-container": "#10bc3f",
+            "surface-container-lowest": "#0a0e14",
+            "tertiary": "#4be260",
+            "surface-dim": "#10141a",
+            "on-primary-fixed": "#001c38",
+            "inverse-on-surface": "#2d3137",
+            "secondary-fixed-dim": "#d8baff",
+            "on-secondary-fixed-variant": "#5b2b9a",
+            "on-tertiary-fixed": "#002205",
+            "on-tertiary": "#00390c",
+            "on-secondary": "#430882",
+            "surface-container-low": "#181c22",
+            "surface": "#10141a",
+            "primary-fixed": "#d3e4ff",
+            "surface-variant": "#31353c",
+            "error-container": "#93000a",
+            "secondary-fixed": "#eddcff",
+            "on-background": "#dfe2eb",
+            "surface-container-highest": "#31353c",
+            "surface-container": "#1c2026",
+            "on-tertiary-fixed-variant": "#005316",
+            "on-surface": "#dfe2eb",
+            "primary": "#a2c9ff",
+            "on-error-container": "#ffdad6",
+            "primary-container": "#58a6ff",
+            "on-secondary-container": "#cda8ff",
+            "on-surface-variant": "#c0c7d4",
+            "on-secondary-fixed": "#290055",
+            "tertiary-fixed": "#6fff7b",
+            "on-tertiary-container": "#004310",
+            "surface-bright": "#353940",
+            "on-primary": "#00315c",
+            "tertiary-fixed-dim": "#4be260",
+            "primary-fixed-dim": "#a2c9ff",
+            "outline-variant": "#414752",
+            "error": "#ffb4ab",
+            "background": "#10141a",
+            "outline": "#8b919d",
+            "on-error": "#690005",
+            "inverse-surface": "#dfe2eb",
+            "surface-tint": "#a2c9ff",
+            "secondary-container": "#5d2d9c",
+            "surface-container-high": "#262a31"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "md": "16px",
+            "xs": "4px",
+            "unit": "4px",
+            "margin": "24px",
+            "gutter": "16px",
+            "lg": "24px",
+            "xl": "32px",
+            "sm": "8px"
+          },
+          "fontFamily": {
+            "h2": ["Inter"],
+            "data-lg": ["JetBrains Mono"],
+            "label-caps": ["Inter"],
+            "h1": ["Inter"],
+            "body-md": ["Inter"],
+            "data-sm": ["JetBrains Mono"],
+            "data-md": ["JetBrains Mono"]
+          },
+          "fontSize": {
+            "h2": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "data-lg": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+            "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+            "h1": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "data-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+            "data-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: #0d1117;
+      color: #dfe2eb;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .status-glow-red { box-shadow: -4px 0 0 0 #f85149; }
+    .status-glow-green { box-shadow: -4px 0 0 0 #3fb950; }
+    .status-glow-blue { box-shadow: -4px 0 0 0 #58a6ff; }
+  </style>
+</head>
+<body class="font-body-md">
+<div class="flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="bg-[#0d1117] h-screen w-64 border-r border-[#30363d] flex flex-col pt-4 space-y-2 flex-shrink-0">
+<div class="px-6 mb-8">
+<h1 class="font-bold text-[#58a6ff] text-xl">CITADEL</h1>
+<p class="font-label-caps text-slate-500 tracking-widest text-[10px]">SOC TERMINAL</p>
+</div>
+<nav class="flex-1 space-y-1">
+<div class="px-3">
+<a class="flex items-center px-3 py-2 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="sensors">sensors</span>
+<span class="font-inter text-sm antialiased">Live Ops</span>
+</a>
+<a class="flex items-center px-3 py-2 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="forum">forum</span>
+<span class="font-inter text-sm antialiased">Council Chat</span>
+</a>
+<a class="flex items-center px-3 py-2 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="hub">hub</span>
+<span class="font-inter text-sm antialiased">Slack Workspace</span>
+</a>
+<a class="flex items-center px-3 py-2 bg-[#1c2128] text-[#58a6ff] border-r-4 border-[#58a6ff] shadow-[inset_0_0_10px_rgba(88,166,255,0.1)] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="notification_important">notification_important</span>
+<span class="font-inter text-sm antialiased">ServiceNow &amp; PagerDuty</span>
+</a>
+<a class="flex items-center px-3 py-2 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="history">history</span>
+<span class="font-inter text-sm antialiased">Timeline</span>
+</a>
+<a class="flex items-center px-3 py-2 text-slate-500 hover:text-slate-300 hover:bg-[#161b22] group transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="analytics">analytics</span>
+<span class="font-inter text-sm antialiased">Model Improvements</span>
+</a>
+</div>
+</nav>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col min-w-0">
+<!-- TopAppBar -->
+<header class="bg-[#161b22] flex justify-between items-center w-full px-6 h-16 border-b border-[#30363d]">
+<div class="flex items-center space-x-4">
+<span class="text-xl font-black tracking-widest text-[#58a6ff] uppercase">Citadel Command Center</span>
+<div class="hidden md:flex ml-8 space-x-6">
+<button class="font-inter tracking-tight font-medium text-[#58a6ff] border-b-2 border-[#58a6ff] pb-1">Monitoring</button>
+<button class="font-inter tracking-tight font-medium text-slate-400 hover:text-blue-300 transition-colors">Compliance</button>
+<button class="font-inter tracking-tight font-medium text-slate-400 hover:text-blue-300 transition-colors">Response</button>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div class="bg-[#0d1117] border border-[#30363d] px-3 py-1.5 flex items-center rounded-lg">
+<span class="material-symbols-outlined text-slate-500 text-sm mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none text-xs focus:ring-0 text-slate-300 w-48" placeholder="Global search..." type="text"/>
+</div>
+<div class="flex space-x-2">
+<span class="material-symbols-outlined text-[#58a6ff] cursor-pointer hover:opacity-80" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-[#58a6ff] cursor-pointer hover:opacity-80" data-icon="security">security</span>
+<span class="material-symbols-outlined text-[#58a6ff] cursor-pointer hover:opacity-80" data-icon="account_circle">account_circle</span>
+</div>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<main class="flex-1 overflow-y-auto p-gutter space-y-gutter">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+<!-- Left Column (ServiceNow) -->
+<div class="space-y-gutter">
+<!-- ServiceNow Header Card -->
+<div class="bg-[#161b22] border border-[#30363d] p-md rounded-lg status-glow-blue">
+<div class="flex justify-between items-center mb-md">
+<span class="font-label-caps text-[#58a6ff]">SERVICENOW INSTANCE: SN-NORTH-7</span>
+<span class="flex items-center text-xs text-tertiary">
+<span class="w-2 h-2 bg-tertiary rounded-full mr-2"></span> Connected
+                </span>
+</div>
+<!-- Active Incidents Table -->
+<div class="mb-gutter">
+<h3 class="font-h2 text-on-surface mb-sm">Active Incidents</h3>
+<div class="overflow-hidden border border-[#30363d] rounded">
+<table class="w-full text-left border-collapse">
+<thead class="bg-[#1c2126] border-b border-[#30363d]">
+<tr>
+<th class="p-sm font-label-caps text-slate-400">INCIDENT ID</th>
+<th class="p-sm font-label-caps text-slate-400">SEVERITY</th>
+<th class="p-sm font-label-caps text-slate-400">CAB STATUS</th>
+</tr>
+</thead>
+<tbody class="bg-surface">
+<tr class="border-b border-[#30363d] hover:bg-[#1c2026]">
+<td class="p-sm font-data-sm text-[#58a6ff]">INC0049281</td>
+<td class="p-sm"><span class="px-2 py-0.5 bg-error-container text-on-error-container text-[10px] font-bold rounded">P1 - CRITICAL</span></td>
+<td class="p-sm font-data-sm text-slate-300">Pending Approval</td>
+</tr>
+<tr class="border-b border-[#30363d] hover:bg-[#1c2026]">
+<td class="p-sm font-data-sm text-[#58a6ff]">INC0049294</td>
+<td class="p-sm"><span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded">P2 - HIGH</span></td>
+<td class="p-sm font-data-sm text-tertiary">Bypass Allowed</td>
+</tr>
+<tr class="hover:bg-[#1c2026]">
+<td class="p-sm font-data-sm text-[#58a6ff]">INC0049302</td>
+<td class="p-sm"><span class="px-2 py-0.5 bg-outline-variant text-slate-200 text-[10px] font-bold rounded">P3 - MEDIUM</span></td>
+<td class="p-sm font-data-sm text-slate-300">Logged</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- GDPR 72h Clock -->
+<div class="bg-[#000000] p-md border border-[#30363d] flex flex-col items-center justify-center space-y-2 rounded">
+<span class="font-label-caps text-error">GDPR MANDATORY REPORTING WINDOW</span>
+<div class="flex items-center space-x-4">
+<div class="text-center">
+<div class="font-data-lg text-3xl text-error">68</div>
+<div class="text-[9px] font-label-caps text-slate-500">HRS</div>
+</div>
+<div class="text-3xl text-error font-data-lg">:</div>
+<div class="text-center">
+<div class="font-data-lg text-3xl text-error">14</div>
+<div class="text-[9px] font-label-caps text-slate-500">MIN</div>
+</div>
+<div class="text-3xl text-error font-data-lg">:</div>
+<div class="text-center">
+<div class="font-data-lg text-3xl text-error">22</div>
+<div class="text-[9px] font-label-caps text-slate-500">SEC</div>
+</div>
+</div>
+<p class="text-[10px] font-data-sm text-slate-500">Elapsed since P1 Incident INC0049281 detection</p>
+</div>
+</div>
+<!-- SOX Audit Log -->
+<div class="bg-[#161b22] border border-[#30363d] p-md rounded-lg">
+<h3 class="font-label-caps text-slate-400 mb-sm">SOX COMPLIANCE AUDIT LOG (IMMUTABLE)</h3>
+<div class="bg-black p-sm rounded font-data-sm text-green-500 space-y-1 h-32 overflow-y-auto">
+<div>[2023-10-27T14:30:01Z] <span class="text-slate-400">AUTH:SYSTEM</span> EVENT:LOG_ROTATION STATUS:SUCCESS</div>
+<div>[2023-10-27T14:32:45Z] <span class="text-slate-400">AUTH:USR_ADM</span> EVENT:POLICY_CHANGE TARGET:FW_PROD_01</div>
+<div>[2023-10-27T14:35:12Z] <span class="text-slate-400">AUTH:SYSTEM</span> EVENT:INTEGRITY_CHECK STATUS:PASSED</div>
+<div>[2023-10-27T15:01:10Z] <span class="text-slate-400">AUTH:SEC_MGR</span> EVENT:ACCESS_REVOKE TARGET:SVC_ACC_09</div>
+<div>[2023-10-27T15:05:44Z] <span class="text-slate-400">AUTH:SYSTEM</span> EVENT:LOG_COMMIT STATUS:VERIFIED</div>
+</div>
+</div>
+</div>
+<!-- Right Column (PagerDuty) -->
+<div class="space-y-gutter">
+<!-- PagerDuty Header Card -->
+<div class="bg-[#161b22] border border-[#30363d] p-md rounded-lg status-glow-red">
+<div class="flex justify-between items-center mb-md">
+<span class="font-label-caps text-[#58a6ff]">PAGERDUTY HUB: CORE-INFRA-PD</span>
+<span class="flex items-center text-xs text-error">
+<span class="w-2 h-2 bg-error rounded-full mr-2 animate-pulse"></span> 4 Open Alerts
+                </span>
+</div>
+<!-- On-Call Status -->
+<div class="grid grid-cols-2 gap-sm mb-gutter">
+<div class="p-sm bg-surface-container-high border border-[#30363d] rounded">
+<div class="font-label-caps text-slate-400 text-[10px]">CURRENT RESPONDER</div>
+<div class="flex items-center mt-2">
+<img class="w-8 h-8 rounded-full border border-[#58a6ff]" data-alt="professional portrait of male systems architect with serious expression in high tech office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCl0j--2fwBzhTt88CJ5OkogQy92r-HlnIkTdpjjOON2gcRg_05ZdL9Jv0uuJyuk5e6R3Lcu3YWiHfiJOM0jKsiqTbNaXzTSJabZI6GQXNgMvMrceq-wGGoNPAPbzUB6Rv8h_MuCyGZ0ApK7zcKuR6LYXURsnew6lNZ8B32NH3dRlTJH7MkwQqKrmtQhrDDqPZ7ZeWATkAuNFbl7xdnXRWzm0ZiR4yZcT03INbwfQeXOu2rnrLtOGEKWkc8vjGnwPfgacfofR6yAc"/>
+<div class="ml-2">
+<div class="font-bold text-xs">A. VOXMAN</div>
+<div class="font-data-sm text-[10px] text-tertiary">PRIMARY L1</div>
+</div>
+</div>
+</div>
+<div class="p-sm bg-surface-container-high border border-[#30363d] rounded">
+<div class="font-label-caps text-slate-400 text-[10px]">SECONDARY SHIFT</div>
+<div class="flex items-center mt-2">
+<img class="w-8 h-8 rounded-full border border-slate-600" data-alt="professional portrait of female devops engineer in modern cybersecurity operations center" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD77ccM2RmpAWPnQUVx4i68GhioFVs9zOccamp_VwCwBjwBR-lekWdTRuBZq5ROgR-vUt5TsYtDerAa6oM2csiVj2L8k9kgKhlN6ePH7bPvn4AjYVtYMLDykMGox3VxcdU_iIdg-JksvMv9E0Jr2gch1AAJFzaX2yAlvAoNea_-5OK33GEcGAVQUmK3hgCN6idAiQbufeWtcosQGNyNK0aUL4vHLc-GpuPBx1SdEdsNvX_n9R65wAmGhV3VqRv26PommDUfQ2I2cmE"/>
+<div class="ml-2">
+<div class="font-bold text-xs">M. CHEN</div>
+<div class="font-data-sm text-[10px] text-slate-400">SECONDARY L2</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Escalation Policy Flow -->
+<div class="mb-gutter">
+<h3 class="font-label-caps text-slate-400 mb-sm">ESCALATION POLICY: CRITICAL_PATH_ALPHA</h3>
+<div class="flex items-center justify-between px-md py-4 bg-black/40 rounded border border-[#30363d]">
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full border-2 border-tertiary flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-sm" data-icon="person">person</span>
+</div>
+<span class="text-[9px] font-label-caps mt-1">L1: ON-CALL</span>
+</div>
+<div class="flex-1 h-0.5 bg-gradient-to-r from-tertiary via-primary to-[#30363d] mx-2"></div>
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full border-2 border-primary flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-sm" data-icon="groups">groups</span>
+</div>
+<span class="text-[9px] font-label-caps mt-1">L2: TEAM LEAD</span>
+</div>
+<div class="flex-1 h-0.5 bg-[#30363d] mx-2"></div>
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full border-2 border-slate-600 flex items-center justify-center text-slate-600">
+<span class="material-symbols-outlined text-sm" data-icon="account_balance">account_balance</span>
+</div>
+<span class="text-[9px] font-label-caps mt-1 text-slate-500">L3: MGMT</span>
+</div>
+</div>
+</div>
+<!-- Alert Fatigue Bar Chart -->
+<div>
+<h3 class="font-label-caps text-slate-400 mb-sm">7-DAY ALERT FATIGUE METRIC</h3>
+<div class="flex items-end space-x-2 h-24 pt-4 px-2 bg-black/20 rounded">
+<div class="flex-1 bg-tertiary/40 h-[40%] rounded-t-sm group relative">
+<div class="hidden group-hover:block absolute -top-6 left-1/2 -translate-x-1/2 bg-surface p-1 text-[8px] border border-outline">122</div>
+</div>
+<div class="flex-1 bg-tertiary/40 h-[35%] rounded-t-sm group relative"></div>
+<div class="flex-1 bg-tertiary/40 h-[45%] rounded-t-sm group relative"></div>
+<div class="flex-1 bg-primary/60 h-[70%] rounded-t-sm group relative"></div>
+<div class="flex-1 bg-primary/60 h-[65%] rounded-t-sm group relative"></div>
+<div class="flex-1 bg-error/80 h-[95%] rounded-t-sm group relative"></div>
+<div class="flex-1 bg-error/80 h-[88%] rounded-t-sm group relative"></div>
+</div>
+<div class="flex justify-between text-[9px] font-label-caps text-slate-500 mt-2 px-1">
+<span>OCT 21</span>
+<span>TODAY</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- CAB (Change Advisory Board) Log Table -->
+<div class="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
+<div class="px-md py-sm border-b border-[#30363d] flex justify-between items-center">
+<h3 class="font-label-caps text-slate-400">GLOBAL CAB (CHANGE ADVISORY BOARD) APPROVAL LOG</h3>
+<button class="bg-[#58a6ff]/10 text-[#58a6ff] text-[10px] px-3 py-1 font-bold border border-[#58a6ff]/30 rounded hover:bg-[#58a6ff]/20 transition-colors">
+              GENERATE COMPLIANCE REPORT
+            </button>
+</div>
+<table class="w-full text-left border-collapse">
+<thead class="bg-[#1c2126] border-b border-[#30363d]">
+<tr>
+<th class="p-md font-label-caps text-slate-400">CHG_ID</th>
+<th class="p-md font-label-caps text-slate-400">SYSTEM / SCOPE</th>
+<th class="p-md font-label-caps text-slate-400">REQUESTOR</th>
+<th class="p-md font-label-caps text-slate-400">APPROVER</th>
+<th class="p-md font-label-caps text-slate-400">STATUS</th>
+<th class="p-md font-label-caps text-slate-400">ACTION</th>
+</tr>
+</thead>
+<tbody class="bg-surface">
+<tr class="border-b border-[#30363d] hover:bg-[#1c2026]">
+<td class="p-md font-data-sm text-[#58a6ff]">CHG-9981</td>
+<td class="p-md font-body-md text-xs">Firewall Rule Update: Port 443</td>
+<td class="p-md font-body-md text-xs">J. Doe (SEC)</td>
+<td class="p-md font-body-md text-xs">Automated Policy Engine</td>
+<td class="p-md"><span class="px-2 py-1 bg-tertiary-container text-on-tertiary-container text-[10px] font-bold rounded">APPROVED</span></td>
+<td class="p-md font-data-sm text-slate-500 text-[10px]">Applied 2m ago</td>
+</tr>
+<tr class="border-b border-[#30363d] hover:bg-[#1c2026]">
+<td class="p-md font-data-sm text-[#58a6ff]">CHG-9984</td>
+<td class="p-md font-body-md text-xs">Kubernetes Cluster Rollout (PROD)</td>
+<td class="p-md font-body-md text-xs">S. Smith (OPS)</td>
+<td class="p-md font-body-md text-xs">B. Wilson (CAB CHAIR)</td>
+<td class="p-md"><span class="px-2 py-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded">REVIEWING</span></td>
+<td class="p-md font-data-sm text-slate-300 text-[10px]">In Vote (3/5)</td>
+</tr>
+<tr class="border-b border-[#30363d] hover:bg-[#1c2026]">
+<td class="p-md font-data-sm text-[#58a6ff]">CHG-9985</td>
+<td class="p-md font-body-md text-xs">Database Schema Migration v2.4</td>
+<td class="p-md font-body-md text-xs">D. Miller (DEV)</td>
+<td class="p-md font-body-md text-xs">F. Harris (DBA)</td>
+<td class="p-md"><span class="px-2 py-1 bg-error-container text-on-error-container text-[10px] font-bold rounded">REJECTED</span></td>
+<td class="p-md font-data-sm text-error text-[10px]">Lack of rollback plan</td>
+</tr>
+<tr class="hover:bg-[#1c2026]">
+<td class="p-md font-data-sm text-[#58a6ff]">CHG-9989</td>
+<td class="p-md font-body-md text-xs">SSL Certificate Renewal (Wildcard)</td>
+<td class="p-md font-body-md text-xs">SYS_BOT_AUTO</td>
+<td class="p-md font-body-md text-xs">PRE-APPROVED</td>
+<td class="p-md"><span class="px-2 py-1 bg-tertiary-container text-on-tertiary-container text-[10px] font-bold rounded">COMMITTED</span></td>
+<td class="p-md font-data-sm text-slate-500 text-[10px]">Success 45m ago</td>
+</tr>
+</tbody>
+</table>
+</div>
+</main>
+</div>
+</div>
+</body></html>
