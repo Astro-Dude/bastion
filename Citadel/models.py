@@ -465,6 +465,8 @@ class IncidentState(State):
     investor_state: InvestorState = Field(default_factory=InvestorState)
     adversary_gen: int = Field(default=1, ge=1, le=4,
         description="Adversary generation this episode (1/2/3 scripted, 4 LLM).")
+    episode_id: str = ""
+    step_count: int = 0
 
     def get_system(self, name: str) -> SystemState:
         for s in self.systems:
