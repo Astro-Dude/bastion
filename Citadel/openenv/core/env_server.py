@@ -1,7 +1,5 @@
 """
 Stub for openenv.core.env_server — replaces the Meta OpenEnv SDK dependency.
-CitadelEnvironment subclasses Environment[A, O, S]; this stub makes it a
-plain Python generic base so the code runs without the hackathon's SDK.
 """
 from __future__ import annotations
 from typing import Generic, TypeVar
@@ -9,6 +7,18 @@ from typing import Generic, TypeVar
 A = TypeVar("A")
 O = TypeVar("O")
 S = TypeVar("S")
+
+
+class Action:
+    pass
+
+
+class Observation:
+    pass
+
+
+class State:
+    pass
 
 
 class Environment(Generic[A, O, S]):
